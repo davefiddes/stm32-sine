@@ -30,14 +30,14 @@ OBJCOPY		= $(PREFIX)-objcopy
 OBJDUMP		= $(PREFIX)-objdump
 MKDIR_P     = mkdir -p
 TERMINAL_DEBUG ?= 0
-CFLAGS		= -Os -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
-             -fno-common -fno-builtin -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
-             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
-				 -mcpu=cortex-m3 -mthumb -std=gnu99 -ffunction-sections -fdata-sections
-CPPFLAGS    = -Os -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
-            -fno-common -std=c++11 -pedantic -DSTM32F1 -DT_DEBUG=$(TERMINAL_DEBUG) \
-             -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
-				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
+CFLAGS_COMMON = -Os -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopencm3/include \
+				 -fno-common -fno-builtin -pedantic  -DT_DEBUG=$(TERMINAL_DEBUG) \
+				 -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1
+CFLAGS		= $(CFLAGS_COMMON) -std=gnu99 \
+				 -DSTM32F1 -mcpu=cortex-m3 -mthumb -ffunction-sections -fdata-sections
+CPPFLAGS    = $(CFLAGS_COMMON) -std=c++11 \
+				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables \
+				 -DSTM32F1 -mcpu=cortex-m3 -mthumb
 LDSCRIPT	= stm32_sine.ld
 LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map,--no-warn-rwx-segments
 OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
@@ -68,7 +68,7 @@ Q := @
 NULL := 2>/dev/null
 endif
 
-all: directories images
+all: directories images genparamdb
 Debug:images
 Release: images
 cleanDebug:clean
@@ -96,6 +96,10 @@ $(OUT_DIR)/%.o: %.cpp Makefile
 	@printf "  CPP     $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CPP) $(CPPFLAGS) -o $@ -c $<
 
+genparamdb: utils/genparamdb/genparamdb.cpp include/param_prj.h
+	$(Q)gcc $(CFLAGS_COMMON) -lstdc++ -DNDEBUG \
+	utils/genparamdb/genparamdb.cpp -o genparamdb
+
 clean:
 	@printf "  CLEAN   ${OUT_DIR}\n"
 	$(Q)rm -rf ${OUT_DIR}
@@ -109,6 +113,8 @@ clean:
 	$(Q)rm -f $(BINARY).srec
 	@printf "  CLEAN   $(BINARY).list\n"
 	$(Q)rm -f $(BINARY).list
+	@printf "  CLEAN   genparamdb\n"
+	$(Q)rm -f genparamdb
 
 flash: images
 	@printf "  FLASH   $(BINARY).bin\n"
