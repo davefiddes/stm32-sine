@@ -97,7 +97,7 @@ $(OUT_DIR)/%.o: %.cpp Makefile
 	$(Q)$(CPP) $(CPPFLAGS) -o $@ -c $<
 
 genparamdb: utils/genparamdb/genparamdb.cpp include/param_prj.h
-	$(Q)gcc $(CFLAGS_COMMON) -lstdc++ -DNDEBUG \
+	$(Q)g++ $(CFLAGS_COMMON) -DNDEBUG \
 	utils/genparamdb/genparamdb.cpp -o genparamdb
 
 clean:
