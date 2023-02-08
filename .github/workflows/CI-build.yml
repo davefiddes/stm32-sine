@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: build-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install build package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-none-eabi
+
+      - name: Build STM32 dependencies
+        run: |
+          echo "Number of processors:" `nproc`
+          make get-deps -j `nproc`
+
+      - name: Run Makefile build for SINE and FOC targets
+        run: |
+          CONTROL=SINE make
+          make clean
+          CONTROL=FOC make
