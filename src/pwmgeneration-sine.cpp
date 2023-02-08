@@ -33,8 +33,7 @@
 #define SHIFT_90DEG  (uint16_t)16384
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
-
-uint16_t PwmGeneration::slipIncr;
+#define INV_SQRT_1_5 FP_FROMFLT(0.8164965809)
 
 void PwmGeneration::Run()
 {
@@ -85,8 +84,8 @@ void PwmGeneration::Run()
 
 void PwmGeneration::SetTorquePercent(float torque)
 {
-   const int filterConst = 4;
-   const float roundingError = FP_TOFLOAT((float)((1 << filterConst) - 1));
+   int filterConst = Param::GetInt(Param::throtfilter);
+   float roundingError = FP_TOFLOAT((float)((1 << filterConst) - 1));
    float fslipmin = Param::GetFloat(Param::fslipmin);
    float ampmin = Param::GetFloat(Param::ampmin);
    float slipstart = Param::GetFloat(Param::slipstart);
@@ -122,6 +121,12 @@ void PwmGeneration::SetTorquePercent(float torque)
       {
          fslipspnt = fslipmin + roundingError;
       }
+   }
+   else if (Encoder::GetRotorDirection() != Param::GetInt(Param::dir))
+   {
+      // Do not apply negative torque if we are already traveling backwards.
+      fslipspnt = 0;
+      ampnomLocal = 0;
    }
    else
    {
@@ -183,14 +188,9 @@ s32fp PwmGeneration::LimitCurrent()
 s32fp PwmGeneration::GetIlMax(s32fp il1, s32fp il2)
 {
    s32fp il3 = -il1 - il2;
-   s32fp offset = SineCore::CalcSVPWMOffset(il1, il2, il3) / 2;
-   offset = ABS(offset);
-   il1 = ABS(il1);
-   il2 = ABS(il2);
-   il3 = ABS(il3);
-   s32fp ilMax = MAX(il1, il2);
-   ilMax = MAX(ilMax, il3);
-   ilMax -= offset;
+   s32fp ilMax = FP_MUL(il1, il1) + FP_MUL(il2, il2) + FP_MUL(il3, il3);
+   ilMax = fp_sqrt(ilMax);
+   ilMax = FP_MUL(ilMax, INV_SQRT_1_5);
 
    return ilMax;
 }
@@ -231,7 +231,6 @@ s32fp PwmGeneration::ProcessCurrents()
 {
    static s32fp currentMax[2];
    static int samples[2] = { 0 };
-   static int sign = 1;
    static EdgeType lastEdge[2] = { PosEdge, PosEdge };
 
    s32fp il1 = GetCurrent(AnaIn::il1, ilofs[0], Param::Get(Param::il1gain));
@@ -259,7 +258,7 @@ s32fp PwmGeneration::ProcessCurrents()
       Param::SetFixed(Param::il2rms, rms);
    }
 
-   s32fp ilMax = sign * GetIlMax(il1, il2);
+   s32fp ilMax = GetIlMax(il1, il2);
 
    Param::SetFixed(Param::il1, il1);
    Param::SetFixed(Param::il2, il2);

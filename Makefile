@@ -39,7 +39,7 @@ CPPFLAGS    = $(CFLAGS_COMMON) -std=c++11 \
 				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables \
 				 -DSTM32F1 -mcpu=cortex-m3 -mthumb
 LDSCRIPT	= stm32_sine.ld
-LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map,--no-warn-rwx-segments
+LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map
 OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o throttle.o errormessage.o stm32_can.o pwmgeneration.o \
@@ -67,6 +67,24 @@ ifneq ($(V),1)
 Q := @
 NULL := 2>/dev/null
 endif
+
+# try-run
+# Usage: option = $(call try-run, command,option-ok,otherwise)
+# Exit code chooses option.
+try-run = $(shell set -e;		\
+	if ($(1)) >/dev/null 2>&1;	\
+	then echo "$(2)";		\
+	else echo "$(3)";		\
+	fi)
+
+# Test a linker (ld) option and return the gcc link command equivalent
+comma := ,
+link_command := -Wl$(comma)
+ld-option = $(call try-run, $(PREFIX)-ld $(1) -v,$(link_command)$(1))
+
+# Test whether we can suppress a safe warning about rwx segments
+# only supported on binutils 2.39 or later
+LDFLAGS	+= $(call ld-option,--no-warn-rwx-segments)
 
 all: directories images genparamdb
 Debug:images
