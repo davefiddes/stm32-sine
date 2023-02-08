@@ -41,7 +41,7 @@ void PrintValue(const char* name, const char* unit, uint32_t id)
               << "\"unit\":\"" << unit << "\","
               << "\"isparam\":false,"
               << "\"id\":\"" << id << "\"}";
-};
+}
 
 //
 //! Format an openinverter modifiable parameter as JSON. These parameters can be
