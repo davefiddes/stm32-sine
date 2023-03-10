@@ -76,11 +76,6 @@ void PrintParam(
               << "\"id\":\"" << id << "\"}";
 }
 
-//
-//! Empty error string list to keep the linker happy
-//
-const char* errorListString = "Empty";
-
 int main()
 {
 // Macro to add a parameter entry to the list

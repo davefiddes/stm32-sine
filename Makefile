@@ -96,9 +96,11 @@ $(OUT_DIR)/%.o: %.cpp Makefile
 	@printf "  CPP     $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CPP) $(CPPFLAGS) -o $@ -c $<
 
-genparamdb: utils/genparamdb/genparamdb.cpp include/param_prj.h
+genparamdb: utils/genparamdb/genparamdb.cpp include/param_prj.h include/errormessage_prj.h
 	$(Q)g++ $(CFLAGS_COMMON) -DNDEBUG \
-	utils/genparamdb/genparamdb.cpp -o genparamdb
+	utils/genparamdb/genparamdb.cpp libopeninv/src/errormessage.cpp \
+	libopeninv/src/printf.cpp libopeninv/src/my_fp.c libopeninv/src/my_string.c \
+	-o genparamdb
 
 clean:
 	@printf "  CLEAN   ${OUT_DIR}\n"
