@@ -39,7 +39,7 @@ CPPFLAGS    = $(CFLAGS_COMMON) -std=c++11 \
 				-ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables \
 				 -DSTM32F1 -mcpu=cortex-m3 -mthumb
 LDSCRIPT	= stm32_sine.ld
-LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map,--no-warn-rwx-segments
+LDFLAGS  = -Llibopencm3/lib -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map
 OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj.o \
            my_string.o digio.o sine_core.o my_fp.o fu.o inc_encoder.o printf.o anain.o \
            temp_meas.o param_save.o throttle.o errormessage.o stm32_can.o pwmgeneration.o \
