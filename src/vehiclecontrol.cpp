@@ -176,7 +176,7 @@ void VehicleControl::CruiseControl()
    }
 
    //Always disable cruise control when brake pedal is pressed or forward signal goes away
-   if (Param::GetBool(Param::din_brake) || !Param::GetBool(Param::din_forward))
+   if (Param::GetBool(Param::din_brake) || (!Param::GetBool(Param::din_forward) && CRUISE_POT != cruisemode))
    {
       Throttle::cruiseSpeed = -1;
    }
@@ -340,7 +340,7 @@ float VehicleControl::ProcessThrottle()
       Throttle::fmax = Param::GetFloat(Param::fmax) * 1.1f;
       float fwPercent = 100;
       Throttle::FrequencyLimitCommand(fwPercent, fstat);
-      PwmGeneration::SetFwCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f);
+      PwmGeneration::SetFwExcCurMax(fwPercent * Param::GetFloat(Param::fwcurmax) / 100.0f, Param::GetFloat(Param::excurmax));
 #endif // CONTROL
    }
 
@@ -442,14 +442,15 @@ void VehicleControl::CalcAndOutputTemp()
       case PWM_FUNC_SPEED:
          tmpout = Param::GetInt(Param::speed) * pwmgain + pwmofs;
          break;
-      case PWM_FUNC_SPEEDFRQ:
+      case PWM_FUNC_EXCITER:
          //Handled in 1ms task
+         tmpout = -1;
          break;
    }
 
    tmpout = MIN(0xFFFF, MAX(0, tmpout));
 
-   timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
+   if (tmpout > 0) timer_set_oc_value(OVER_CUR_TIMER, TIM_OC4, tmpout);
 
    Param::SetFloat(Param::tmphs, temphsFiltered);
    Param::SetFloat(Param::tmpm, tempmFiltered);
@@ -472,6 +473,8 @@ float VehicleControl::ProcessUdc()
    //HW_REV1 had 3.9k resistors
    int uauxGain = hwRev == HW_REV1 ? 289 : 249;
    Param::SetFloat(Param::uaux, (float)AnaIn::uaux.Get() / uauxGain);
+
+   if (hwRev == HW_ZOE) return 0; //no udc measurement, nothing to do
 
    //Yes heatsink temperature also selects external ADC as udc source
    if (snshs == TempMeas::TEMP_BMWI3HS)
@@ -602,7 +605,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
          case 3:
             //Mux 1.3 is grounded on SDU and reads stator temperature 2 on LDU
             //Mux 2.3 is grounded on both drive units
-            isLdu = tmpmi > 50;  //Tied to GND on SDU
+            isLdu = tmpmi > 20;  //Tied to GND on SDU
             if (isLdu)
                mTemps[1] = TempMeas::Lookup(tmpmi, TempMeas::TEMP_TESLA_100K);
             //Now update to maximum temperaure
@@ -689,8 +692,8 @@ float VehicleControl::GetUserThrottleCommand()
       Param::SetInt(Param::pot2, pot2val);
    }
 
-   bool inRange1 = Throttle::CheckAndLimitRange(&potval, 0);
-   bool inRange2 = Throttle::CheckAndLimitRange(&pot2val, 1);
+   bool inRange1 = Throttle::CheckAndLimitRange(potval, 0);
+   bool inRange2 = Throttle::CheckAndLimitRange(pot2val, 1);
 
    Throttle::UpdateDynamicRegenTravel(Param::GetFloat(Param::regentravel), FP_TOFLOAT(Encoder::GetRotorFrequency()));
 
@@ -778,6 +781,7 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    bool brake = Param::GetBool(Param::din_brake);
    int idlemode = Param::GetInt(Param::idlemode);
    int potmode = Param::GetInt(Param::potmode);
+   int cruisemode = Param::GetInt(Param::cruisemode);
    uint32_t speed = Encoder::GetSpeed();
    float cruiseSpnt = Throttle::CalcCruiseSpeed(speed);
 
@@ -801,6 +805,11 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
    {
       float idleSpnt = Throttle::CalcIdleSpeed(speed);
       finalSpnt = MAX(throtSpnt, idleSpnt);
+
+      //If we combine throttle speed control with idle speed, never drop speed setpoint below idle speed
+      //because then the motor will coast indefinitely
+      if (CRUISE_POT == cruisemode)
+         Throttle::cruiseSpeed = MAX(Throttle::cruiseSpeed, Throttle::idleSpeed);
    }
    else if (idlemode == IDLE_MODE_HILLHOLD)
    {
@@ -821,7 +830,7 @@ bool VehicleControl::GetCruiseCreepCommand(float& finalSpnt, float throtSpnt)
       }
    }
 
-   if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed > Throttle::idleSpeed)
+   if (Throttle::cruiseSpeed > 0 && Throttle::cruiseSpeed >= Throttle::idleSpeed)
    {
       if (Param::GetInt(Param::cruisemode) == CRUISE_LIMITER)
          finalSpnt = MIN(cruiseSpnt, throtSpnt);

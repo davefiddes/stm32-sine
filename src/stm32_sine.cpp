@@ -87,8 +87,10 @@ static void Ms100Task(void)
       Param::SetInt(Param::din_desat, 2);
    }
 
+   int cruisemode = Param::GetInt(Param::cruisemode);
+
    if (rtc_get_counter_val() > 50) //500ms after start check for brake pedal
-      seenBrakePedal |= (Param::GetInt(Param::cruisemode) == CRUISE_OFF) || Param::GetBool(Param::din_brake);
+      seenBrakePedal |= (cruisemode == CRUISE_OFF || cruisemode == CRUISE_POT) || Param::GetBool(Param::din_brake);
 
    VehicleControl::SelectDirection();
    VehicleControl::CruiseControl();
@@ -163,7 +165,7 @@ static void Ms10Task(void)
 
    stt |= DigIo::emcystop_in.Get() || hwRev == HW_REV3 ? STAT_NONE : STAT_EMCYSTOP;
    stt |= DigIo::mprot_in.Get() ? STAT_NONE : STAT_MPROT;
-   stt |= Throttle::IsThrottlePressed(Param::GetInt(Param::pot)) ? STAT_POTPRESSED : STAT_NONE;
+   stt |= torquePercent > 0 ? STAT_POTPRESSED : STAT_NONE;
    stt |= udc >= Param::GetFloat(Param::udcsw) ? STAT_NONE : STAT_UDCBELOWUDCSW;
    stt |= udc < Param::GetFloat(Param::udclim) ? STAT_NONE : STAT_UDCLIM;
    stt |= seenBrakePedal ? STAT_NONE : STAT_BRAKECHECK;
@@ -320,7 +322,10 @@ void Param::Change(Param::PARAM_NUM paramNum)
          PwmGeneration::SetPolePairRatio(Param::GetInt(Param::polepairs) / Param::GetInt(Param::respolepairs));
 
          #if CONTROL == CTRL_FOC
-         PwmGeneration::SetControllerGains(Param::GetInt(Param::iqkp), Param::GetInt(Param::idkp), Param::GetInt(Param::curki));
+         PwmGeneration::SetControllerGains(Param::GetInt(Param::iqkp),
+                                           Param::GetInt(Param::idkp),
+                                           Param::GetInt(Param::exckp),
+                                           Param::GetInt(Param::curki));
          Encoder::SwapSinCos((Param::GetInt(Param::pinswap) & SWAP_RESOLVER) > 0);
          FOC::SetMotorParameters(Param::GetFloat(Param::lqminusld) / 1000.0f, Param::GetFloat(Param::fluxlinkage) / 1000.0f);
          FOC::SetMaximumModulationIndex(Param::GetInt(Param::modmax));
@@ -360,10 +365,7 @@ void Param::Change(Param::PARAM_NUM paramNum)
 
          if (hwRev != HW_BLUEPILL)
          {
-            if (Param::GetInt(Param::pwmfunc) == PWM_FUNC_SPEEDFRQ)
-               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO9);
-            else
-               gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
+            gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
          }
          break;
    }
@@ -373,21 +375,24 @@ static void ProcessCustomSdoCommands(CanSdo::SdoFrame* sdoFrame)
 {
    if (sdoFrame->index == SDO_INDEX_COMMANDS && sdoFrame->cmd == SDO_WRITE)
    {
+      sdoFrame->cmd = SDO_WRITE_REPLY;
       switch (sdoFrame->subIndex)
       {
       case START_COMMAND_SUBINDEX:
          if (sdoFrame->data < MOD_LAST)
-         {
             Param::SetInt(Param::opmode, sdoFrame->data);
-            sdoFrame->cmd = SDO_WRITE_REPLY;
-            sdoFrame->data = 0;
+         else
+         {
+            sdoFrame->cmd = SDO_ABORT;
+            sdoFrame->data = SDO_ERR_RANGE;
          }
          break;
       case STOP_COMMAND_SUBINDEX:
          Param::SetInt(Param::opmode, 0);
-         sdoFrame->cmd = SDO_WRITE_REPLY;
-         sdoFrame->data = 0;
          break;
+      default:
+         sdoFrame->cmd = SDO_ABORT;
+         sdoFrame->data = SDO_ERR_INVIDX;
       }
    }
 }
@@ -461,6 +466,7 @@ extern "C" int main(void)
    canSdo = &sdo;
    VehicleControl::SetCan(can);
    TerminalCommands::SetCanMap(canMap);
+   SdoCommands::SetCanMap(canMap);
 
    s.AddTask(Ms100Task, 100);
    s.AddTask(Ms10Task, 10);
@@ -491,10 +497,14 @@ extern "C" int main(void)
       }
       if (0 != sdoFrame)
       {
+         CanSdo::SdoFrame sdoOrig = *sdoFrame;
          SdoCommands::ProcessStandardCommands(sdoFrame);
 
          if (sdoFrame->cmd == SDO_ABORT)
+         {
+            *sdoFrame = sdoOrig;
             ProcessCustomSdoCommands(sdoFrame);
+         }
 
          sdo.SendSdoReply(sdoFrame);
       }
