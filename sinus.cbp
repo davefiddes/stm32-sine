@@ -80,6 +80,7 @@
 		<Unit filename="include/hwdefs.h" />
 		<Unit filename="include/hwinit.h" />
 		<Unit filename="include/inc_encoder.h" />
+		<Unit filename="include/model3lin.h" />
 		<Unit filename="include/param_prj.h" />
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
@@ -1758,6 +1759,7 @@
 		<Unit filename="src/GD31xxOI.cpp" />
 		<Unit filename="src/hwinit.cpp" />
 		<Unit filename="src/inc_encoder.cpp" />
+		<Unit filename="src/model3lin.cpp" />
 		<Unit filename="src/pwmgeneration-foc.cpp" />
 		<Unit filename="src/pwmgeneration-sine.cpp" />
 		<Unit filename="src/pwmgeneration.cpp" />
@@ -1775,16 +1777,6 @@
 			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/stub_canhardware.cpp">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/stub_canhardware.h">
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/stub_libopencm3.c">
-			<Option compilerVar="CC" />
-			<Option target="Test" />
-		</Unit>
-		<Unit filename="test/test.h">
 			<Option target="Test" />
 		</Unit>
 		<Unit filename="test/stub_canhardware.h">

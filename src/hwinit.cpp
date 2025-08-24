@@ -59,12 +59,14 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_GPIOD);
    rcc_periph_clock_enable(RCC_GPIOE);
    rcc_periph_clock_enable(RCC_USART3);
+   rcc_periph_clock_enable(RCC_UART4);//Tesla M3 LIN
    rcc_periph_clock_enable(RCC_TIM1); //Main PWM
    rcc_periph_clock_enable(RCC_TIM2); //Scheduler, over current on blue pill
    rcc_periph_clock_enable(RCC_TIM3); //Rotor Encoder
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
    rcc_periph_clock_enable(RCC_TIM5); //Gate PSU driver on MG board
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
+   rcc_periph_clock_enable(RCC_DMA2); //UART4 LIN
    rcc_periph_clock_enable(RCC_ADC1);
    rcc_periph_clock_enable(RCC_ADC2);
    rcc_periph_clock_enable(RCC_CRC);
@@ -180,6 +182,7 @@ static HWREV ReadVariantResistor()
 
 HWREV detect_hw()
 {
+   return HW_TESLAM3;
    //Check if PB3 and PC10 are connected (mini mainboard)
    gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
    gpio_set(GPIOC, GPIO10);
@@ -441,5 +444,25 @@ void tim5_setup()//Used on VCT6 for MG gate drive power supply
     timer_set_oc_value(TIM5, TIM_OC1,125);//125=46% high
     timer_set_oc_value(TIM5, TIM_OC2,150);//140=44% high
     timer_enable_counter(TIM5);
+}
+
+/**
+* Setup UART4 for LINbus on M3 drive unit
+*/
+
+void uart4_setup(void)
+{
+    /* Setup GPIO pin GPIO_USART4_TX and GPIO_USART4_RX. */
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
+                  GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_UART4_TX);
+    gpio_set_mode(GPIOA, GPIO_MODE_INPUT,
+                  GPIO_CNF_INPUT_FLOAT, GPIO_UART4_RX);
+    usart_set_baudrate(UART4, 19200);
+    usart_set_databits(UART4, 8);
+    usart_set_stopbits(UART4, USART_STOPBITS_1);
+    usart_set_mode(UART4, USART_MODE_TX_RX);
+    usart_set_parity(UART4, USART_PARITY_NONE);
+    usart_set_flow_control(UART4, USART_FLOWCONTROL_NONE);
+    usart_enable(UART4);
 }
 

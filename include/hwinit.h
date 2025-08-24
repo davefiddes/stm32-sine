@@ -28,6 +28,7 @@ void nvic_setup(void);
 void rtc_setup(void);
 void tim_setup(void);
 void tim5_setup(void);
+void uart4_setup(void);
 void spi_setup(void);
 void spi_setup_teslam3(void);
 HWREV detect_hw(void);

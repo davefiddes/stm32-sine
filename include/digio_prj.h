@@ -37,6 +37,9 @@
     DIG_IO_ENTRY(inta_in,,,)       \
     DIG_IO_ENTRY(gate_cs_hi,,,)    \
     DIG_IO_ENTRY(gate_sd_hi,,,)    \
+    DIG_IO_ENTRY(gate_ps_en,,,)    \
+    DIG_IO_ENTRY(lin_wake,,,)      \
+    DIG_IO_ENTRY(lin_nslp,,,)      \
 
 //...Then we assign the physical GPIOs per variant
 
@@ -116,6 +119,9 @@
     DIG_IO_ENTRY(brk_out,     GPIOD, GPIO11, PinMode::OUTPUT)      \
     DIG_IO_ENTRY(gate_cs_hi,  GPIOE, GPIO10, PinMode::OUTPUT)      \
     DIG_IO_ENTRY(gate_sd_hi,  GPIOE, GPIO11, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(gate_ps_en,  GPIOE, GPIO13, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(lin_nslp,    GPIOC, GPIO15, PinMode::OUTPUT)      \
+    DIG_IO_ENTRY(lin_wake,    GPIOC, GPIO14, PinMode::OUTPUT)      \
 
 #define DIG_IO_BLUEPILL \
     DIG_IO_ENTRY(brake_in,    GPIOB, GPIO9,  PinMode::INPUT_FLT)   \

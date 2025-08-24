@@ -34,7 +34,9 @@
 #define SHIFT_90DEG  (uint16_t)16384
 #define FRQ_TO_ANGLE(frq) FP_TOINT((frq << SineCore::BITS) / pwmfrq)
 #define DIGIT_TO_DEGREE(a) FP_FROMINT(angle) / (65536 / 360)
-#define FRQ_DIVIDER 8192 //PWM ISR callback frequency divider
+//#define FRQ_DIVIDER 8192 //PWM ISR callback frequency divider
+
+#define FRQ_DIVIDER 4096 //PWM ISR callback frequency divider
 
 uint16_t  PwmGeneration::pwmfrq = 1;
 uint16_t  PwmGeneration::angle;
@@ -370,7 +372,8 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
    ///- for 17.6 kHz: call ISR every four update events (that is every other period)
    ///- for 8.8kHz: call ISR every other update event (that is once per PWM period)
    ///- for 4.4kHz: call ISR on every update event (that is twice per period)
-   const uint8_t repCounters[] = { 3, 1, 0 };
+  // const uint8_t repCounters[] = { 3, 1, 0 };
+   const uint8_t repCounters[] = { 3, 0, 0 };
    const uint16_t pwmmax = 1U << pwmdigits;
    const uint8_t outputMode = activeLow ? GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN : GPIO_CNF_OUTPUT_ALTFN_PUSHPULL;
 

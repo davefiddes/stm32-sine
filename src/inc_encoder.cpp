@@ -61,6 +61,7 @@ static uint32_t pulseMeasFrq = selectedConfig->pulseMeasFrequency;
 
 //Delay in us between generating an edge on the exciter output and measuring the
 //Return values via ADC - Found this by scoping
+//static const uint16_t resolverSampleDelay = 40;
 static const uint16_t resolverSampleDelay = 40;
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;

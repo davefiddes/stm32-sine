@@ -52,7 +52,7 @@ OBJSL		= stm32_sine.o hwinit.o stm32scheduler.o params.o terminal.o terminal_prj
            temp_meas.o param_save.o throttle.o errormessage.o pwmgeneration.o \
            picontroller.o terminalcommands.o vehiclecontrol.o \
            stm32_can.o canmap.o canhardware.o cansdo.o sdocommands.o \
-           GD31xxOI.o crc8.o teslamodel3.o
+           GD31xxOI.o crc8.o teslamodel3.o linbus.o model3lin.o
 
 ifeq ($(CONTROL), SINE)
 	OBJSL += pwmgeneration-sine.o

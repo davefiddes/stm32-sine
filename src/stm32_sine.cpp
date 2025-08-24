@@ -50,7 +50,8 @@
 #include "delay.h"
 #include "teslamodel3.h"
 #include "sdocommands.h"
-
+#include "linbus.h"
+#include "model3lin.h"
 #define PRINT_JSON 0
 #define START_COMMAND_SUBINDEX 4
 #define STOP_COMMAND_SUBINDEX 5
@@ -63,6 +64,10 @@ static CanMap* canMap;
 static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
+static LinBus* lin;
+static Model3Lin linM3;
+static uint8_t m3PumpSpd=0;
+
 
 static void Ms100Task(void)
 {
@@ -265,6 +270,8 @@ static void Ms10Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
+
+   if (hwRev == HW_TESLAM3) linM3.SetSpeed(m3PumpSpd);
 }
 
 /** This function is called when the user changes a parameter */
@@ -363,6 +370,8 @@ void Param::Change(Param::PARAM_NUM paramNum)
          Throttle::accelflt = Param::GetInt(Param::accelflt);
          Throttle::accelmax = Param::GetInt(Param::accelmax);
 
+         if (hwRev == HW_TESLAM3) m3PumpSpd = Param::GetInt(Param::pumpspeed);
+
          if (hwRev != HW_BLUEPILL)
          {
             gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO9);
@@ -453,9 +462,13 @@ extern "C" int main(void)
    PwmGeneration::SetCurrentOffset(2048, 2048);
    if (hwRev == HW_TESLAM3)
    {
-      TeslaModel3::Initialize();
+   DigIo::gate_ps_en.Set();
+   uDelay(200000);
+   TeslaModel3::Initialize();
+   LinBus l(UART4, 19200);
+   lin=&l;
+   linM3.SetLinInterface(lin);
    }
-
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
@@ -472,6 +485,7 @@ extern "C" int main(void)
    s.AddTask(Ms10Task, 10);
 
    DigIo::prec_out.Set();
+
 
    Terminal t(USART3, TermCmds);
    terminal = &t;
