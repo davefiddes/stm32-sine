@@ -17,13 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Linker script for Olimex STM32-H103 (STM32F103RBT6, 128K flash, 20K RAM). */
+/* Linker script for Tesla M3 DU (STM32F103VCT6, 256K flash, 48K RAM). */
 
 /* Define memory regions. */
 MEMORY
 {
 	rom (rx)    : ORIGIN = 0x08001000, LENGTH = 120K
-	ram (rwx)   : ORIGIN = 0x20000000, LENGTH = 20K
+	ram (rwx)   : ORIGIN = 0x20000000, LENGTH = 48K
 }
 
 
