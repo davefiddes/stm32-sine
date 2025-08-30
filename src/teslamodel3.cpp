@@ -138,6 +138,11 @@ bool GateDriverInterface::IsShutdown()
  */
 void TeslaModel3::Initialize()
 {
+    // Turn on the Gate Drive isolated PSU and wait for it to stabilise. This
+    // should be quick enough that we don't need to strobe the watchdog.
+    DigIo::gate_ps_en.Set();
+    uDelay(200000);
+
     if (TeslaM3GateDriver::Init())
     {
         TeslaM3GateDriver::Enable();
