@@ -64,7 +64,6 @@ static CanMap* canMap;
 static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
-static LinBus* lin;
 static Model3Lin linM3;
 static uint8_t m3PumpSpd=0;
 
@@ -460,14 +459,13 @@ extern "C" int main(void)
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
+   LinBus l(UART4, 19200);
    if (hwRev == HW_TESLAM3)
    {
-   DigIo::gate_ps_en.Set();
-   uDelay(200000);
-   TeslaModel3::Initialize();
-   LinBus l(UART4, 19200);
-   lin=&l;
-   linM3.SetLinInterface(lin);
+      DigIo::gate_ps_en.Set();
+      uDelay(200000);
+      TeslaModel3::Initialize();
+      linM3.SetLinInterface(&l);
    }
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
    scheduler = &s;
