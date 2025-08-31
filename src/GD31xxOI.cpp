@@ -81,7 +81,7 @@ void MGSPI::Initialize() {
    ConfigureGateDriver(DigIo::cs2_lo);
 }
 
-void MGSPI::CyclicFunction() {
+void MGSPI::Ms100Task() {
    static uint8_t MG_Cycler = 0;
 
    switch (MG_Cycler){

@@ -58,12 +58,14 @@ void clock_setup(void)
    rcc_periph_clock_enable(RCC_GPIOD);
    rcc_periph_clock_enable(RCC_GPIOE);
    rcc_periph_clock_enable(RCC_USART3);
+   rcc_periph_clock_enable(RCC_UART4);//Tesla M3 LIN
    rcc_periph_clock_enable(RCC_TIM1); //Main PWM
    rcc_periph_clock_enable(RCC_TIM2); //Scheduler, over current on blue pill
    rcc_periph_clock_enable(RCC_TIM3); //Rotor Encoder
    rcc_periph_clock_enable(RCC_TIM4); //Overcurrent / AUX PWM, scheduler on blue pill
    rcc_periph_clock_enable(RCC_TIM5); //Gate PSU driver on MG board
    rcc_periph_clock_enable(RCC_DMA1);  //ADC, Encoder and UART3
+   rcc_periph_clock_enable(RCC_DMA2); // Tesla M3 LIN UART4
    rcc_periph_clock_enable(RCC_ADC1);
    rcc_periph_clock_enable(RCC_ADC2);
    rcc_periph_clock_enable(RCC_CRC);

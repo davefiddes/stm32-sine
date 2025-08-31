@@ -50,6 +50,7 @@
 #include "delay.h"
 #include "teslamodel3.h"
 #include "sdocommands.h"
+#include "linbus.h"
 
 #define PRINT_JSON 0
 #define START_COMMAND_SUBINDEX 4
@@ -63,6 +64,10 @@ static CanMap* canMap;
 static CanSdo* canSdo;
 static Terminal* terminal;
 static bool seenBrakePedal = false;
+
+typedef void (*TaskHandler)();
+static TaskHandler ms10Handler;
+static TaskHandler ms100Handler;
 
 static void Ms100Task(void)
 {
@@ -95,7 +100,6 @@ static void Ms100Task(void)
    VehicleControl::SelectDirection();
    VehicleControl::CruiseControl();
 
-   if (HW_MG == hwRev) MGSPI::CyclicFunction();
 
    #if CONTROL == CTRL_SINE
    //uac = udc * amp/maxamp / sqrt(2)
@@ -109,10 +113,7 @@ static void Ms100Task(void)
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       canMap->SendAll();
 
-   if (hwRev == HW_TESLAM3)
-   {
-      TeslaModel3::CyclicFunction();
-   }
+   if (ms100Handler) ms100Handler();
 }
 
 static void RunCharger(float udc)
@@ -265,6 +266,8 @@ static void Ms10Task(void)
 
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
+
+   if (ms10Handler) ms10Handler();
 }
 
 /** This function is called when the user changes a parameter */
@@ -446,14 +449,21 @@ extern "C" int main(void)
    nvic_setup();
    parm_load();
    ErrorMessage::SetTime(1);
-   if (HW_MG == hwRev) MGSPI::Initialize();
+   if (HW_MG == hwRev)
+   {
+      MGSPI::Initialize();
+      ms100Handler = &MGSPI::Ms100Task;
+   }
    Param::SetInt(Param::pwmio, pwmio_setup(Param::GetBool(Param::pwmpol)));
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
+   LinBus lin;
    if (hwRev == HW_TESLAM3)
    {
-      TeslaModel3::Initialize();
+      TeslaModel3::Initialize(&lin);
+      ms100Handler = &TeslaModel3::Ms100Task;
+      ms10Handler = &TeslaModel3::Ms10Task;
    }
 
    Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack

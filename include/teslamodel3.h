@@ -19,6 +19,9 @@
 #ifndef TESLAMODEL3_H
 #define TESLAMODEL3_H
 
+#include "linbus.h"
+#include "teslam3oilpump.h"
+
 /**
  * \brief Encapsulate all of the Tesla Model 3 Inverter board specific
  * functionality
@@ -26,8 +29,12 @@
 class TeslaModel3
 {
 public:
-    static void Initialize();
-    static void CyclicFunction();
+    static void Initialize(LinBus* lin);
+    static void Ms100Task();
+    static void Ms10Task();
+
+private:
+    static TeslaM3OilPump oilpump;
 };
 
 

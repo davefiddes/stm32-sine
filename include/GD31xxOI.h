@@ -30,7 +30,7 @@ class MGSPI {
 
 public:
    static void Initialize();
-   static void CyclicFunction();
+   static void Ms100Task();
    static uint16_t GetRawTemperature(int index) { return temps[index]; }
    static uint16_t GetUdc() { return udc; }
 

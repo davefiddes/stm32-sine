@@ -136,7 +136,7 @@ bool GateDriverInterface::IsShutdown()
 /**
  * \brief Set up the the Tesla Model 3 gate drivers
  */
-void TeslaModel3::Initialize()
+void TeslaModel3::Initialize(LinBus* lin)
 {
     // Turn on the Gate Drive isolated PSU and wait for it to stabilise. This
     // should be quick enough that we don't need to strobe the watchdog.
@@ -151,12 +151,14 @@ void TeslaModel3::Initialize()
     {
         ErrorMessage::Post(ERR_GATEDRIVEINITFAIL);
     }
+
+    oilpump.SetLinInterface(lin);
 }
 
 /**
  * \brief Periodically check the gate drivers are happy
  */
-void TeslaModel3::CyclicFunction()
+void TeslaModel3::Ms100Task()
 {
     if (TeslaM3GateDriver::IsFaulty())
     {
@@ -186,3 +188,14 @@ void TeslaModel3::CyclicFunction()
         // TODO: Shutdown the inverter?
     }
 }
+
+/**
+ * \brief Run the oil pump control loop
+ */
+void TeslaModel3::Ms10Task()
+{
+    oilpump.Ms10Task();
+}
+
+// Instance of the oil pump controller
+TeslaM3OilPump TeslaModel3::oilpump;
