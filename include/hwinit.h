@@ -19,8 +19,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HWINIT_H_INCLUDED
-#define HWINIT_H_INCLUDED
+#ifndef HWINIT_H
+#define HWINIT_H
+
+#include "hwdefs.h"
+#include <stdint.h>
 
 void clock_setup(void);
 void usart_setup(void);
@@ -35,4 +38,4 @@ void write_bootloader_pininit(bool bootprec, bool pwmActiveLow);
 HWREV io_setup();
 uint16_t pwmio_setup(bool activeLow);
 
-#endif // HWINIT_H_INCLUDED
+#endif // HWINIT_H

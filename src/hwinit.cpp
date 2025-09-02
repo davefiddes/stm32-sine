@@ -32,7 +32,6 @@
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/desig.h>
-#include "hwdefs.h"
 #include "hwinit.h"
 #include "stm32_loader.h"
 #include "my_string.h"
@@ -173,13 +172,20 @@ static HWREV ReadVariantResistor()
    else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
    else if (result1 > 510 && result1 < 616) return HW_LEAF3;
    else if (result1 > 624 && result1 < 670) return HW_ZOE;
-   else if (result1 > 327 && result1 < 347) return HW_MG;
-   else if (result1 > 395 && result1 < 419) return HW_TESLAM3;
+   else if (result1 > 287 && result1 < 307) return HW_MG;
+   else if (result1 > 327 && result1 < 347) return HW_TESLAM3;
    else return HW_MINI;
 }
 
 HWREV detect_hw()
 {
+   // For STM32F103VC based designs just read the variant resistor as the other
+   // pins are used for other purposes like LIN and SPI
+   if (desig_get_flash_size() >= 256)
+   {
+      return ReadVariantResistor();
+   }
+
    //Check if PB3 and PC10 are connected (mini mainboard)
    gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO10);
    gpio_set(GPIOC, GPIO10);
