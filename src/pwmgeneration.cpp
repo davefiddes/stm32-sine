@@ -444,6 +444,8 @@ uint16_t PwmGeneration::TimerSetup(uint16_t deadtime, bool activeLow)
 
    timer_generate_event(PWM_TIMER, TIM_EGR_UG);
 
+   timer_set_master_mode(PWM_TIMER, TIM_CR2_MMS_UPDATE);
+
    timer_enable_counter(PWM_TIMER);
 
    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, outputMode, GPIO8 | GPIO9 | GPIO10);

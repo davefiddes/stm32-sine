@@ -43,6 +43,12 @@
 #define NORTH_EXC_PIN      hwRev == HW_BLUEPILL ? GPIO14 : GPIO2
 #define NORTH_EXC_EXTI     hwRev == HW_BLUEPILL ? EXTI14 : EXTI2
 
+// Dedicated hardware resolver exciter generator on Tesla M3
+#define EXCITER_TIM        TIM8
+#define EXCITER_TIMRST     RST_TIM8
+#define EXCITER_PORT       GPIOC
+#define EXCITER_PIN        GPIO6
+
 typedef enum
 {
    HW_REV1, HW_REV2, HW_REV3, HW_TESLA, HW_BLUEPILL, HW_PRIUS, HW_MINI, HW_LEAF2, HW_LEAF3, HW_BMWI3, HW_ZOE, HW_MG, HW_TESLAM3

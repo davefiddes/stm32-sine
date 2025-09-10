@@ -9,7 +9,7 @@ class Encoder
 public:
    enum mode
    {
-      SINGLE, AB, ABZ, SPI, RESOLVER, SINCOS, INVALID
+      SINGLE, AB, ABZ, SPI, RESOLVER, SINCOS, HFRESOLVER, INVALID
    };
 
    static void Reset();
@@ -35,6 +35,7 @@ private:
    static void InitTimerABZMode();
    static void InitSPIMode();
    static void InitResolverMode();
+   static void InitHFResolverMode();
    static uint16_t GetAngleSPI();
    static uint16_t GetAngleResolver();
    static uint16_t GetAngleSinCos();

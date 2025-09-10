@@ -59,9 +59,25 @@ static const ENCODER_CONFIG encoderConfigurations[] =
 static const ENCODER_CONFIG * selectedConfig = &encoderConfigurations[0];
 static uint32_t pulseMeasFrq = selectedConfig->pulseMeasFrequency;
 
-//Delay in us between generating an edge on the exciter output and measuring the
-//Return values via ADC - Found this by scoping
-static const uint16_t resolverSampleDelay = 40;
+// Delay in us between generating an edge on the 4.4kHz exciter output and
+// measuring the return values via ADC - Found this by scoping.
+// The delay is symmetrical for both rising and falling exciter edges.
+static const uint16_t LFResolverSampleDelay = 40;
+
+// For the high-frequency 8.8kHz exciter output two delays are required.
+// The delay is measured using a scope to measure between the otherwise unused
+// NORTH_EXC_PIN and the resolver sine/cosine signals.
+
+// The rising edge delay is measured from the rising edge of NORTH_EXC_PIN
+// and the first trough of the exciter sine wave.
+static const uint16_t HFResolverSampleDelayRising = 28;
+
+// The falling edge delay is measured from the falling edge of NORTH_EXC_PIN
+// and the peak of the exciter sine wave.
+static const uint16_t HFResolverSampleDelayFalling = 85;
+
+static uint16_t resolverSampleDelayRising;
+static uint16_t resolverSampleDelayFalling;
 static volatile uint16_t timdata[MAX_REVCNT_VALUES];
 static volatile uint16_t angle = 0;
 static uint16_t pulsesPerTurn = 0;
@@ -120,6 +136,7 @@ void Encoder::SetMode(Encoder::mode mode)
          InitSPIMode();
          break;
       case RESOLVER:
+      case HFRESOLVER:
       case SINCOS:
          InitResolverMode();
          break;
@@ -206,6 +223,7 @@ void Encoder::UpdateRotorAngle(int dir)
          UpdateTurns(angle, lastAngle);
          break;
       case RESOLVER:
+      case HFRESOLVER:
          angle = GetAngleResolver();
          UpdateTurns(angle, lastAngle);
          break;
@@ -247,7 +265,7 @@ void Encoder::UpdateRotorFrequency(int callingFrequency)
       lastFrequency = (callingFrequency * turnsSinceLastSample) / FP_TOINT(TWO_PI);
       turnsSinceLastSample = 0;
    }
-   else if ((encMode == RESOLVER) || (encMode == SPI) || (encMode == SINCOS))
+   else if ((encMode == RESOLVER) || (encMode == HFRESOLVER) || (encMode == SPI) || (encMode == SINCOS))
    {
       int absTurns = ABS(turnsSinceLastSample);
       if (startupDelay == 0 && absTurns > STABLE_ANGLE)
@@ -296,7 +314,7 @@ int Encoder::GetRotorDirection()
 /** Get current speed in rpm */
 uint32_t Encoder::GetSpeed()
 {
-   if (encMode == RESOLVER || encMode == SINCOS)
+   if (encMode == RESOLVER || encMode == HFRESOLVER || encMode == SINCOS)
    {
       return FP_TOINT(60 * lastFrequency) / Param::GetInt(Param::respolepairs);
    }
@@ -460,7 +478,7 @@ void Encoder::InitResolverMode()
    gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO6 | GPIO7);
    exti_disable_request(NORTH_EXC_EXTI);
 
-   if (encMode == RESOLVER)
+   if (encMode == RESOLVER || encMode == HFRESOLVER)
    {
       rcc_periph_reset_pulse(REV_CNT_TIMRST);
       timer_set_prescaler(REV_CNT_TIMER, 71); //run at 1MHz
@@ -485,6 +503,18 @@ void Encoder::InitResolverMode()
       adc_set_injected_offset(ADC2, 2, ch2);
       adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_TIM3_CC4);
 
+      if (encMode == HFRESOLVER)
+      {
+         InitHFResolverMode();
+         resolverSampleDelayRising = HFResolverSampleDelayRising;
+         resolverSampleDelayFalling = HFResolverSampleDelayFalling;
+      }
+      else
+      {
+         resolverSampleDelayRising = LFResolverSampleDelay;
+         resolverSampleDelayFalling = LFResolverSampleDelay;
+      }
+
       if (CHK_BIPOLAR_OFS(ch1) || CHK_BIPOLAR_OFS(ch2))
       {
          ErrorMessage::Post(ERR_HIRESOFS);
@@ -500,6 +530,37 @@ void Encoder::InitResolverMode()
    }
 
    seenNorthSignal = true;
+}
+
+/** Initialize the hardware exciter needed to achieve an 8.8kHz exciter
+ * sine wave. This only works on high-density STM32F103VC parts
+ */
+void Encoder::InitHFResolverMode()
+{
+   rcc_periph_reset_pulse(EXCITER_TIMRST);
+
+   // 8.8kHz PWM with 50% duty cycle
+   timer_set_prescaler(EXCITER_TIM, 0);
+   timer_set_period(EXCITER_TIM, 8191);
+   timer_set_oc_value(EXCITER_TIM, TIM_OC1, 4095);
+
+   // Output on CH1
+   timer_set_oc_mode(EXCITER_TIM, TIM_OC1, TIM_OCM_PWM1);
+   timer_enable_oc_output(EXCITER_TIM, TIM_OC1);
+   timer_set_oc_polarity_high(EXCITER_TIM, TIM_OC1);
+   timer_enable_break_main_output(EXCITER_TIM);
+
+   // Synchronise updates to PWM_TIMER
+	timer_slave_set_trigger(EXCITER_TIM, TIM_SMCR_TS_ITR0);
+   timer_slave_set_mode(EXCITER_TIM, TIM_SMCR_SMS_RM);
+
+   timer_enable_counter(EXCITER_TIM);
+
+   gpio_set_mode(
+      EXCITER_PORT,
+      GPIO_MODE_OUTPUT_50_MHZ,
+      GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,
+      EXCITER_PIN);
 }
 
 /** Gets angle from an AD2S chip */
@@ -533,8 +594,10 @@ uint16_t Encoder::GetAngleResolver()
    {
       gpio_clear(NORTH_EXC_PORT, NORTH_EXC_PIN);
       /* The phase delay of the 3-pole filter, amplifier and resolver is 305 degrees
-         That is 125 degrees after the falling edge of the exciting square wave */
-      timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelay);
+         That is 125 degrees after the falling edge of the exciting square wave.
+         When using the 8.8kHz high-frequency exciter the delays are different
+         for each phase.*/
+      timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelayFalling);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
       angle = DecodeAngle(true);
@@ -542,6 +605,7 @@ uint16_t Encoder::GetAngleResolver()
    else
    {
       gpio_set(NORTH_EXC_PORT, NORTH_EXC_PIN);
+      timer_set_oc_value(REV_CNT_TIMER, TIM_OC4, resolverSampleDelayRising);
       timer_set_counter(REV_CNT_TIMER, 0);
       timer_enable_counter(REV_CNT_TIMER);
       angle = DecodeAngle(false);
