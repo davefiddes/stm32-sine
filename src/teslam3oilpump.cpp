@@ -38,6 +38,17 @@
 #include "params.h"
 #include <libopencm3/stm32/usart.h>
 
+// LIN protocol PID definitions
+
+static const uint8_t SpeedRequestPID = 0x0A;
+static const uint8_t SpeedRequestLen = 2;
+
+static const uint8_t FlowPressureTempStatusPID = 0x2A;
+static const uint8_t FlowPressureTempStatusLen = 8;
+
+static const uint8_t VoltageSpeedStatusPID = 0x30;
+static const uint8_t VoltageSpeedStatusLen = 8;
+
 /**
  * \brief Initialise the oil pump controller
  */
@@ -71,7 +82,7 @@ void TeslaM3OilPump::Ms10Task()
    {
       TenCount = 0;
 
-      if (lin->HasReceived(42, 8)) // 0x2A hex address
+      if (lin->HasReceived(FlowPressureTempStatusPID, FlowPressureTempStatusLen))
       {
          uint8_t* data = lin->GetReceivedBytes();
 
@@ -80,7 +91,7 @@ void TeslaM3OilPump::Ms10Task()
             Param::oilpres,
             (data[2] * 2) * 0.14503); // Motor oil pressure in psi
       }
-      else if (lin->HasReceived(48, 8)) // 0x30 hex address
+      else if (lin->HasReceived(VoltageSpeedStatusPID, VoltageSpeedStatusLen))
       {
          uint8_t* data = lin->GetReceivedBytes();
 
@@ -93,19 +104,19 @@ void TeslaM3OilPump::Ms10Task()
       if (read)
       {
          if (readalt == 10)
-            lin->Request(42, 0, 0);
+            lin->Request(FlowPressureTempStatusPID, 0, 0);
          if (readalt == 20)
-            lin->Request(48, 0, 0);
+            lin->Request(VoltageSpeedStatusPID, 0, 0);
       }
       else
       {
-         uint8_t lindata[2];
-         lindata[0] = 0x11;
+         uint8_t lindata[SpeedRequestLen];
+         lindata[0] = 0xFF;
          lindata[1] = Param::GetInt(Param::pumpspeed);
          lin->Request(
-            10,
+            SpeedRequestPID,
             lindata,
-            sizeof(lindata)); // 0x0A hex address for Pump speed command
+            sizeof(lindata));
       }
 
       read = !read; // ping - pong read and send.
