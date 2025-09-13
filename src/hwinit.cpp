@@ -37,6 +37,7 @@
 #include "my_string.h"
 #include "digio.h"
 #include "anain.h"
+#include "delay.h"
 
 /**
 * Start clocks of all needed peripherals
@@ -147,12 +148,18 @@ static bool is_existent(uint32_t port, uint16_t pin)
 
 static HWREV ReadVariantResistor()
 {
+   adc_power_off(ADC1);
    uint8_t channels[1] = { 15 };
-   //Read the board variant resistor divider with one injected conversion
-   adc_power_on(ADC1);
    adc_set_injected_sequence(ADC1, sizeof(channels), channels);
    adc_set_sample_time(ADC1, 15, ADC_SMPR_SMP_239DOT5CYC);
    adc_enable_external_trigger_injected(ADC1, ADC_CR2_JEXTSEL_JSWSTART);
+
+   adc_power_on(ADC1);
+	uDelay(1);
+   adc_reset_calibration(ADC1);
+   adc_calibrate(ADC1);
+
+   //Read the board variant resistor divider with one injected conversion
    adc_start_conversion_injected(ADC1);
    while (!adc_eoc_injected(ADC1));
    uint16_t result1 = adc_read_injected(ADC1, 1);
