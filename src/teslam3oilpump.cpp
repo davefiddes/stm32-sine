@@ -36,6 +36,7 @@
 #include "teslam3oilpump.h"
 #include "digio.h"
 #include "params.h"
+#include "errormessage.h"
 #include <libopencm3/stm32/usart.h>
 
 // LIN protocol PID definitions
@@ -52,10 +53,15 @@ static const uint8_t VoltageSpeedStatusLen = 8;
 //! \brief Aim for a 100ms loop duration
 static const uint8_t MaxLoopTicks = 10;
 
+//! \brief Maximum time we are prepared to wait for a valid response from the
+//! pump in 10ms ticks
+static const uint16_t StatusTimeout = 500;
+
 /**
  * \brief Initialise the oil pump controller
  */
-TeslaM3OilPump::TeslaM3OilPump() : lin(nullptr), tickCount(0)
+TeslaM3OilPump::TeslaM3OilPump()
+: lin(nullptr), tickCount(0), ticksSinceLastResponse(0)
 {
 }
 
@@ -105,6 +111,8 @@ void TeslaM3OilPump::Ms10Task()
    tickCount++;
    if (tickCount >= MaxLoopTicks)
       tickCount = 0;
+
+   CheckForFaults();
 }
 
 /**
@@ -132,6 +140,7 @@ void TeslaM3OilPump::ProcessStatusResponse()
       Param::SetFloat(
          Param::oilpres,
          (data[2] * 2) * 0.14503); // Motor oil pressure in psi
+      ticksSinceLastResponse = 0;
    }
    else if (lin->HasReceived(VoltageSpeedStatusPID, VoltageSpeedStatusLen))
    {
@@ -140,5 +149,27 @@ void TeslaM3OilPump::ProcessStatusResponse()
       Param::SetFloat(
          Param::upmp, data[0] * 0.1); // Oil pump 12V supply Voltage.
       Param::SetInt(Param::pmprev, (data[5] << 8) | (data[4])); // Oil pump RPM
+      ticksSinceLastResponse = 0;
+   }
+}
+
+/**
+ * \brief Check to see if we are receiving timely status responses
+ */
+void TeslaM3OilPump::CheckForFaults()
+{
+   if (ticksSinceLastResponse > StatusTimeout)
+   {
+      ErrorMessage::Post(ERR_OILPUMPFAULT);
+
+      // Set default values to indicate a fault condition
+      Param::SetInt(Param::tmpoil, 0);
+      Param::SetFloat(Param::oilpres, 0);
+      Param::SetFloat(Param::upmp, 0);
+      Param::SetInt(Param::pmprev, 0);
+   }
+   else
+   {
+      ticksSinceLastResponse++;
    }
 }

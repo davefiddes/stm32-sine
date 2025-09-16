@@ -48,14 +48,15 @@ public:
    void SetLinInterface(LinBus* l);
    void Ms10Task();
 
-
 private:
    void SendSpeedRequest();
    void ProcessStatusResponse();
+   void CheckForFaults();
 
 private:
    LinBus* lin;
    uint8_t tickCount;
+   uint16_t ticksSinceLastResponse;
 };
 
 #endif // TESLAM3OILPUMP_H
