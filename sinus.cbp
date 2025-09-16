@@ -84,6 +84,7 @@
 		<Unit filename="include/pwmgeneration.h" />
 		<Unit filename="include/temp_meas.h" />
 		<Unit filename="include/teslagatedriver.h" />
+		<Unit filename="include/teslam3oilpump.h" />
 		<Unit filename="include/teslamodel3.h" />
 		<Unit filename="include/throttle.h" />
 		<Unit filename="include/vehiclecontrol.h" />
@@ -1764,6 +1765,7 @@
 		<Unit filename="src/stm32_sine.cpp" />
 		<Unit filename="src/temp_meas.cpp" />
 		<Unit filename="src/terminal_prj.cpp" />
+		<Unit filename="src/teslam3oilpump.cpp" />
 		<Unit filename="src/teslamodel3.cpp" />
 		<Unit filename="src/throttle.cpp" />
 		<Unit filename="src/vehiclecontrol.cpp" />

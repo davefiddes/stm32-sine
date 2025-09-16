@@ -49,10 +49,13 @@ static const uint8_t FlowPressureTempStatusLen = 8;
 static const uint8_t VoltageSpeedStatusPID = 0x30;
 static const uint8_t VoltageSpeedStatusLen = 8;
 
+//! \brief Aim for a 100ms loop duration
+static const uint8_t MaxLoopTicks = 10;
+
 /**
  * \brief Initialise the oil pump controller
  */
-TeslaM3OilPump::TeslaM3OilPump() : lin(nullptr), TenCount(0), read(true), readalt(0)
+TeslaM3OilPump::TeslaM3OilPump() : lin(nullptr), tickCount(0)
 {
 }
 
@@ -77,52 +80,65 @@ void TeslaM3OilPump::SetLinInterface(LinBus* l)
  */
 void TeslaM3OilPump::Ms10Task()
 {
-   TenCount++;
-   if (TenCount == 1) // slow down to 20ms as this is called in 10ms task.
+   ProcessStatusResponse();
+
+   // Statically schedule requests. A 10ms tick is sufficient for a max length
+   // LIN request to be processed
+   switch (tickCount)
    {
-      TenCount = 0;
+   case 0:
+      SendSpeedRequest();
+      break;
 
-      if (lin->HasReceived(FlowPressureTempStatusPID, FlowPressureTempStatusLen))
-      {
-         uint8_t* data = lin->GetReceivedBytes();
+   case 1:
+      lin->Request(FlowPressureTempStatusPID, 0, 0);
+      break;
 
-         Param::SetInt(Param::tmpoil, data[3] - 40); // Motor oil temperature
-         Param::SetFloat(
-            Param::oilpres,
-            (data[2] * 2) * 0.14503); // Motor oil pressure in psi
-      }
-      else if (lin->HasReceived(VoltageSpeedStatusPID, VoltageSpeedStatusLen))
-      {
-         uint8_t* data = lin->GetReceivedBytes();
+   case 2:
+      lin->Request(VoltageSpeedStatusPID, 0, 0);
+      break;
 
-         Param::SetFloat(
-            Param::upmp, data[0] * 0.1); // Oil pump 12V supply Voltage.
-         Param::SetInt(
-            Param::pmprev, (data[5] << 8) | (data[4])); // Oil pump RPM
-      }
+   default:
+      break;
+   }
 
-      if (read)
-      {
-         if (readalt == 10)
-            lin->Request(FlowPressureTempStatusPID, 0, 0);
-         if (readalt == 20)
-            lin->Request(VoltageSpeedStatusPID, 0, 0);
-      }
-      else
-      {
-         uint8_t lindata[SpeedRequestLen];
-         lindata[0] = 0xFF;
-         lindata[1] = Param::GetInt(Param::pumpspeed);
-         lin->Request(
-            SpeedRequestPID,
-            lindata,
-            sizeof(lindata));
-      }
+   tickCount++;
+   if (tickCount >= MaxLoopTicks)
+      tickCount = 0;
+}
 
-      read = !read; // ping - pong read and send.
+/**
+ * \brief Send the currently configured static pump speed to the pump
+ */
+void TeslaM3OilPump::SendSpeedRequest()
+{
+   uint8_t lindata[SpeedRequestLen];
+   lindata[0] = 0xFF;
+   lindata[1] = Param::GetInt(Param::pumpspeed);
+   lin->Request(SpeedRequestPID, lindata, sizeof(lindata));
+}
 
-      if (readalt > 31)
-         readalt = 0;
-      readalt++;
+/**
+ * \brief Process status responses from the pump updating spot values as
+ * required
+ */
+void TeslaM3OilPump::ProcessStatusResponse()
+{
+   if (lin->HasReceived(FlowPressureTempStatusPID, FlowPressureTempStatusLen))
+   {
+      uint8_t* data = lin->GetReceivedBytes();
+
+      Param::SetInt(Param::tmpoil, data[3] - 40); // Motor oil temperature
+      Param::SetFloat(
+         Param::oilpres,
+         (data[2] * 2) * 0.14503); // Motor oil pressure in psi
+   }
+   else if (lin->HasReceived(VoltageSpeedStatusPID, VoltageSpeedStatusLen))
+   {
+      uint8_t* data = lin->GetReceivedBytes();
+
+      Param::SetFloat(
+         Param::upmp, data[0] * 0.1); // Oil pump 12V supply Voltage.
+      Param::SetInt(Param::pmprev, (data[5] << 8) | (data[4])); // Oil pump RPM
    }
 }
