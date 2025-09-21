@@ -35,8 +35,8 @@
 
 #include "teslam3oilpump.h"
 #include "digio.h"
-#include "params.h"
 #include "errormessage.h"
+#include "params.h"
 #include <libopencm3/stm32/usart.h>
 
 // LIN protocol PID definitions
@@ -158,18 +158,21 @@ void TeslaM3OilPump::ProcessStatusResponse()
  */
 void TeslaM3OilPump::CheckForFaults()
 {
-   if (ticksSinceLastResponse > StatusTimeout)
+   if (ticksSinceLastResponse < StatusTimeout)
    {
+      ticksSinceLastResponse++;
+   }
+   else if (ticksSinceLastResponse == StatusTimeout)
+   {
+      // Advance beyond the timeout to avoid posting the error repeatedly
+      ticksSinceLastResponse++;
+
       ErrorMessage::Post(ERR_OILPUMPFAULT);
 
       // Set default values to indicate a fault condition
       Param::SetInt(Param::tmpoil, 0);
-      Param::SetFloat(Param::oilpres, 0);
-      Param::SetFloat(Param::upmp, 0);
+      Param::SetInt(Param::oilpres, 0);
+      Param::SetInt(Param::upmp, 0);
       Param::SetInt(Param::pmprev, 0);
-   }
-   else
-   {
-      ticksSinceLastResponse++;
    }
 }
