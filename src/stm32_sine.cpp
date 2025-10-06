@@ -110,6 +110,7 @@ static void Ms100Task(void)
    Param::SetFloat(Param::uac, uac);
    #endif // CONTROL
 
+   canSdo->TriggerTimeout(100);
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       canMap->SendAll();
 

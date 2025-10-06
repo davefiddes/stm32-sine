@@ -49,6 +49,10 @@
 #define EXCITER_PORT       GPIOC
 #define EXCITER_PIN        GPIO6
 
+// Allow CAN frames to be sent from any Scheduler task, CAN interrupt or the
+// main loop
+#define CAN_MAX_IRQ_PRIORITY (0xe << 4)
+
 typedef enum
 {
    HW_REV1, HW_REV2, HW_REV3, HW_TESLA, HW_BLUEPILL, HW_PRIUS, HW_MINI, HW_LEAF2, HW_LEAF3, HW_BMWI3, HW_ZOE, HW_MG, HW_TESLAM3
