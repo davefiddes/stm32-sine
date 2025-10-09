@@ -39,11 +39,12 @@ CPPFLAGS    = -Os -ggdb3 -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopen
               -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
               -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
 
-# Check if the variable GITHUB_RUN_NUMBER exists. When running on the github actions running, this
-# variable is automatically available.
-# Create a compiler define with the content of the variable. Or, if it does not exist, use replacement value 99999.
-EXTRACOMPILERFLAGS  = $(shell \
-    if [ -z "$$GITHUB_RUN_NUMBER" ]; then echo "-DGITHUB_RUN_NUMBER=0"; else echo "-DGITHUB_RUN_NUMBER=$$GITHUB_RUN_NUMBER"; fi )
+# Extract the current state of this git repository
+# to embed it into the firmware.
+GIT_VERSION = $(shell git describe --tags --always --dirty)
+GIT_HASH = $(shell echo -n "0x" && git rev-parse --short=8 HEAD)
+GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "1" || echo "0")
+CPPFLAGS += -DGIT_VERSION=$(GIT_VERSION) -DGIT_HASH=$(GIT_HASH) -DGIT_DIRTY=$(GIT_DIRTY)
 
 LDSCRIPT	= stm32_sine.ld
 LDFLAGS  = -Llibopencm3/lib -ggdb3 -T$(LDSCRIPT) -march=armv7 -nostartfiles -Wl,--gc-sections,-Map,linker.map
