@@ -1,0 +1,86 @@
+name: Release Firmware
+
+on:
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "Release tag"
+                required: true
+                type: string
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                control: [SINE, FOC]
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0 # Needed for git describe
+                  submodules: recursive
+
+            - name: Install dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y gcc-arm-none-eabi
+
+            - name: Get submodules
+              run: make get-deps
+
+            - name: Build firmware (${{ matrix.control }})
+              run: make CONTROL=${{ matrix.control }} clean all
+
+            - name: Prepare artifacts
+              run: |
+                  cp stm32_${{ matrix.control }}.bin stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.bin
+                  cp stm32_${{ matrix.control }}.hex stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.hex
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: stm32_${{ matrix.control }}-firmware
+                  path: |
+                      stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.bin
+                      stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.hex
+
+    source:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+                  submodules: recursive
+
+            - name: Create source tarball
+              run: |
+                  git archive --format=tar.gz --prefix=stm32-sine-M3_DU-${{ github.event.inputs.tag }}/ -o stm32-sine-M3_DU-source-${{ github.event.inputs.tag }}.tar.gz HEAD
+
+            - name: Upload source tarball
+              uses: actions/upload-artifact@v4
+              with:
+                  name: source-tarball
+                  path: stm32-sine-M3_DU-source-${{ github.event.inputs.tag }}.tar.gz
+
+    release:
+        needs: [build, source]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.event.inputs.tag }}
+                  name: Release ${{ github.event.inputs.tag }}
+                  draft: true
+                  prerelease: true
+                  files: |
+                      artifacts/**/stm32_*.bin
+                      artifacts/**/stm32_*.hex
+                      artifacts/**/stm32-sine-M3_DU-source-*.tar.gz
