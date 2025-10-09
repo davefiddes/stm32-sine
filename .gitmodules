@@ -3,4 +3,4 @@
 	url = https://github.com/jsphuebner/libopencm3
 [submodule "libopeninv"]
 	path = libopeninv
-	url = git@github.com:davefiddes/libopeninv.git
+	url = https://github.com/jsphuebner/libopeninv.git
