@@ -39,11 +39,21 @@ CPPFLAGS    = -Os -ggdb3 -Wall -Wextra -Iinclude/ -Ilibopeninv/include -Ilibopen
               -DCONTROL=CTRL_$(CONTROL) -DCTRL_SINE=0 -DCTRL_FOC=1 \
               -ffunction-sections -fdata-sections -fno-builtin -fno-rtti -fno-exceptions -fno-unwind-tables -mcpu=cortex-m3 -mthumb
 
-# Extract the current state of this git repository
-# to embed it into the firmware.
-GIT_VERSION = $(shell git describe --tags --always --dirty)
-GIT_HASH = $(shell echo -n "0x" && git rev-parse --short=8 HEAD)
-GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "1" || echo "0")
+ifeq ($(shell git rev-parse --is-inside-work-tree 2>/dev/null),true)
+	# Extract the current state of this git repository
+	# to embed it into the firmware.
+	GIT_VERSION = $(shell git describe --tags --always --dirty)
+	GIT_HASH = $(shell echo -n "0x" && git rev-parse --short=8 HEAD)
+	GIT_DIRTY = $(shell test -n "`git status --porcelain`" && echo "1" || echo "0")
+	GIT_AVAIL = 1
+else
+	# Not a git repository, e.g. a release tarball.
+	GIT_VERSION = v0.0-unknown
+	GIT_HASH = 0x12345678
+	GIT_DIRTY = 1
+	GIT_AVAIL = 0
+endif
+
 CPPFLAGS += -DGIT_VERSION=$(GIT_VERSION) -DGIT_HASH=$(GIT_HASH) -DGIT_DIRTY=$(GIT_DIRTY)
 
 LDSCRIPT	= stm32_sine.ld
@@ -155,8 +165,10 @@ flash: images
 .PHONY: directories images clean
 
 get-deps:
+ifeq ($(GIT_AVAIL), 1)
 	@printf "  GIT SUBMODULE\n"
 	$(Q)git submodule update --init
+endif
 	@printf "  MAKE libopencm3\n"
 	$(Q)${MAKE} -C libopencm3 TARGETS=stm32/f1
 
