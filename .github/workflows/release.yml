@@ -60,13 +60,13 @@ jobs:
 
       - name: Create source tarball
         run: |
-          git archive --format=tar.gz --prefix=stm32-sine-M3_DU-${{ github.event.inputs.tag }}/ -o stm32-sine-M3_DU-source-${{ github.event.inputs.tag }}.tar.gz HEAD
+          ./scripts/git-archive-all.sh --format tar.gz --prefix stm32-sine-${{ github.event.inputs.tag }}/ stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
 
       - name: Upload source tarball
         uses: actions/upload-artifact@v4
         with:
           name: source-tarball
-          path: stm32-sine-M3_DU-source-${{ github.event.inputs.tag }}.tar.gz
+          path: stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
 
   release:
     needs: [build, source]
@@ -87,4 +87,4 @@ jobs:
           files: |
             artifacts/**/stm32_*.bin
             artifacts/**/stm32_*.hex
-            artifacts/**/stm32-sine-M3_DU-source-*.tar.gz
+            artifacts/**/stm32-sine-source-*.tar.gz
