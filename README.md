@@ -1,42 +1,75 @@
+# stm32-sine M3_DU
+
 [![Build status](../../actions/workflows/CI-build.yml/badge.svg)](../../actions/workflows/CI-build.yml)
 
-# stm32-sine
-Main firmware of the Huebner inverter project
-This firmware runs on any revision of the "Huebner" hardware https://github.com/jsphuebner/inverter-hardware as well as any derivatives as the Open Source Tesla controller https://github.com/damienmaguire
+Firmware for Damien Maguire's Tesla Model 3 [inverter replacement project](https://github.com/damienmaguire/Tesla-Model-3-Drive-Unit). This firmware is a maintained fork of Johannes Huebner's [stm32-sine](https://github.com/jsphuebner/stm32-sine) firmware.
 
-# Goals
-The main goal of this firmware is well-drivable control of electric 3-phase motors with as little software complexity as possible. We do not rely on virtual control methods such as FOC (field oriented control) or DTC (direct torque control). This makes tuning more intuitive, as only real physical quantities are parametrized.
-The same principle is applied to the hardware design, keeping component count low and therefor minimize cost and failure modes.
-To fine tune the driving experience and adapt to different flavours of power stages, over 60 parameters can be customized.
+Though not a prime focus of the project it should run on any revision of the "Huebner" hardware <https://github.com/jsphuebner/inverter-hardware> as well as any derivatives such as the Open Source Tesla controller <https://github.com/damienmaguire>.
 
-# Motor Control Concept
-The idea is that the dynamics of any 3-phase asynchronous motor are controlled by the amplitude of the sythesized sine wave and its frequency offset to the rotor speed (slip). 
-For 3-phase synchronous motors a similar control method did not prove practical. Therefor a FOC version of the software has been created. It shares 95% of the code.
+## Features
 
-# Inverter charging
-A unique feature of this software is to re-purpose the drivetrain hardware as a programmable battery charger. One of the motor phase windings is being used as a high current capable inductor and one of the phase switches as a buck or boost converter. This has practically proven to replace a separate charging unit and further reduce complexity of electric vehicles.
+Over the original stm32-sine firmware this fork adds:
 
-# Further reading
-A comprehensive guide to the Huebner inverter system can be found here: https://openinverter.org/docs
+* Support for the M3_DU inverter PCB
+* Configuration and fault monitoring of the M3_DU gate drivers
+* Tesla Model 3 oil pump control
+* Robust configuration over CAN using [OpenInverter CAN Tool](https://github.com/davefiddes/openinverter-can-tool/) or [esp32-web-interface](https://github.com/jsphuebner/esp32-web-interface/tree/can-backend)
 
-# Compiling
-You will need the arm-none-eabi toolchain: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-On Ubuntu type
+## Binary releases
 
-`sudo apt-get install git gcc-arm-none-eabi`
+Binary releases can be found on the [releases page](../../releases).
 
-The only external depedency is libopencm3 which I forked. You can download and build this dependency by typing
+## Further reading
 
-`make get-deps`
+Development is documented in this forum thread: <https://openinverter.org/forum/viewtopic.php?t=575>
 
-Now you can compile stm32-sine by typing
+Progress of the hardware and system integration is documented on Damien Maguire's YouTube channel: <https://www.youtube.com/@Evbmw>
 
-`make`
+A comprehensive guide to the Huebner inverter system can be found here: <https://openinverter.org/docs>
 
-or
+## Compiling
 
-`CONTROL=FOC make`
+Building the firmware requires Linux and an `arm-none-eabi` toolchain.:
 
-to build the FOC version for synchronous motors.
+On Debian/Ubuntu install the toolchain by running:
 
-And upload it to your board using a JTAG/SWD adapter, the updater.py script or the esp8266 web interface
+```terminal
+sudo apt-get install build-essential git gcc-arm-none-eabi
+```
+
+On Fedora:
+
+```terminal
+sudo dnf group install c-development development-tools
+sudo dnf install arm-none-eabi-gcc-cs arm-none-eabi-newlib
+```
+
+The only dependency is [libopencm3](https://github.com/libopencm3/libopencm3) which is maintained as a git submodule. You can download and build this by running:
+
+```terminal
+make get-deps
+```
+
+Now you can build the FOC firmware for rear drive units by running:
+
+```terminal
+make CONTROL=FOC
+```
+
+or SINE firmware for front drive units by running:
+
+```terminal
+make CONTROL=SINE
+```
+
+And upload it to your board using a JTAG/SWD adapter using [openocd](http://openocd.org/):
+
+```terminal
+make flash
+```
+
+or with OpenInverter CAN Tool:
+
+```terminal
+oic upgrade stm32_foc.bin
+```
