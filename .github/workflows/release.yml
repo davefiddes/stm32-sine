@@ -8,6 +8,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -71,6 +74,8 @@ jobs:
   release:
     needs: [build, source]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # IMPORTANT: mandatory for making GitHub Releases
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
