@@ -138,6 +138,10 @@ bool GateDriverInterface::IsShutdown()
  */
 void TeslaModel3::Initialize(LinBus* lin)
 {
+    // Explicitly disable the HV Discharge. It should be off already from when
+    // DigIo was initialised.
+    DigIo::hv_disch_en.Clear();
+
     // Turn on the Gate Drive isolated PSU and wait for it to stabilise. This
     // should be quick enough that we don't need to strobe the watchdog.
     DigIo::gate_ps_en.Set();
