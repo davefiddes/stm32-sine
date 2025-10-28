@@ -288,7 +288,10 @@ void Param::Change(Param::PARAM_NUM paramNum)
          can->SetBaudrate((CanHardware::baudrates)Param::GetInt(Param::canspeed));
          break;
       case Param::outmode:
-         if (hwRev == HW_BLUEPILL) return; //disable for blue pill
+         //disable for blue pill and Tesla M3
+         if (
+            (hwRev == HW_BLUEPILL) || (hwRev == HW_TESLAM3) || (hwRev == HW_MG))
+            return;
          switch (Param::GetInt(Param::outmode))
          {
             default:
