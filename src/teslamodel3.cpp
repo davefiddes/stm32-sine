@@ -134,10 +134,20 @@ bool GateDriverInterface::IsShutdown()
 }
 
 /**
+ * \brief How long should we wait before turning our power off
+ * in 100ms ticks.
+ */
+static const int32_t PowerOffDelay = 100;
+
+/**
  * \brief Set up the the Tesla Model 3 gate drivers
  */
 void TeslaModel3::Initialize(LinBus* lin)
 {
+    // Set the main PSU enable ON so we are now in control
+    DigIo::main_psu_en.Set();
+    powerOffCountdown = PowerOffDelay;
+
     // Explicitly disable the HV Discharge. It should be off already from when
     // DigIo was initialised.
     DigIo::hv_disch_en.Clear();
@@ -191,6 +201,29 @@ void TeslaModel3::Ms100Task()
 
         // TODO: Shutdown the inverter?
     }
+
+    // Monitor the ignition input
+    if (!DigIo::t15_ign.Get())
+    {
+        if (powerOffCountdown == PowerOffDelay)
+        {
+            Param::SetInt(Param::opmode, MOD_OFF);
+            powerOffCountdown--;
+        }
+        else if (powerOffCountdown == 0)
+        {
+            // Say goodnight, Gracie
+            DigIo::main_psu_en.Clear();
+        }
+        else
+        {
+            powerOffCountdown--;
+        }
+    }
+    else
+    {
+        powerOffCountdown = PowerOffDelay;
+    }
 }
 
 /**
@@ -203,3 +236,6 @@ void TeslaModel3::Ms10Task()
 
 // Instance of the oil pump controller
 TeslaM3OilPump TeslaModel3::oilpump;
+
+// Instance of the power off countdown counter
+int32_t TeslaModel3::powerOffCountdown;

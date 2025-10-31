@@ -21,6 +21,7 @@
 
 #include "linbus.h"
 #include "teslam3oilpump.h"
+#include <stdint.h>
 
 /**
  * \brief Encapsulate all of the Tesla Model 3 Inverter board specific
@@ -35,6 +36,7 @@ public:
 
 private:
     static TeslaM3OilPump oilpump;
+    static int32_t        powerOffCountdown;
 };
 
 
