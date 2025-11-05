@@ -393,16 +393,29 @@ void VehicleControl::GetDigInputs()
    Param::SetInt(Param::din_cruise, DigIo::cruise_in.Get() | ((canio & CAN_IO_CRUISE) != 0));
    Param::SetInt(Param::din_start, DigIo::start_in.Get() | ((canio & CAN_IO_START) != 0));
    Param::SetInt(Param::din_brake, DigIo::brake_in.Get() | ((canio & CAN_IO_BRAKE) != 0));
-   Param::SetInt(Param::din_mprot, DigIo::mprot_in.Get());
    Param::SetInt(Param::din_forward, DigIo::fwd_in.Get() | ((canio & CAN_IO_FWD) != 0));
    Param::SetInt(Param::din_reverse, DigIo::rev_in.Get() | ((canio & CAN_IO_REV) != 0));
-   Param::SetInt(Param::din_emcystop, DigIo::emcystop_in.Get());
    Param::SetInt(Param::din_bms, (canio & CAN_IO_BMS) != 0 || (hwRev == HW_TESLA ? false : DigIo::bms_in.Get()) );
 
-   if (hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
+   if ( hwRev == HW_TESLAM3 || hwRev == HW_MG)
    {
       Param::SetInt(Param::din_ocur, DigIo::ocur_in.Get());
-      Param::SetInt(Param::din_desat, DigIo::desat_in.Get());
+
+      // Mark unused inputs as "na"
+      Param::SetInt(Param::din_mprot, 2);
+      Param::SetInt(Param::din_emcystop, 2);
+      Param::SetInt(Param::din_desat, 2);
+   }
+   else
+   {
+      Param::SetInt(Param::din_mprot, DigIo::mprot_in.Get());
+      Param::SetInt(Param::din_emcystop, DigIo::emcystop_in.Get());
+
+      if (hwRev != HW_REV1 && hwRev != HW_BLUEPILL)
+      {
+         Param::SetInt(Param::din_ocur, DigIo::ocur_in.Get());
+         Param::SetInt(Param::din_desat, DigIo::desat_in.Get());
+      }
    }
 }
 
