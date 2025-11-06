@@ -22,6 +22,9 @@
    ANA_IN_ENTRY(uaux,      GPIOA, 3) \
    ANA_IN_ENTRY(il1,       GPIOA, 5) \
    ANA_IN_ENTRY(il2,       GPIOB, 0) \
+   ANA_IN_ENTRY(tmphs2,    GPIOA, 4) /* unconnected */ \
+   ANA_IN_ENTRY(tmphs3,    GPIOC, 5) /* unconnected */ \
+
 
 //Alternative list. Must contain exactly the same names and number of
 //entries as ANA_IN_LIST but may contain different IO pins
@@ -34,6 +37,20 @@
    ANA_IN_ENTRY(tmphs,     GPIOA, 4) \
    ANA_IN_ENTRY(uaux,      GPIOB, 1) \
    ANA_IN_ENTRY(il1,       GPIOA, 5) \
-   ANA_IN_ENTRY(il2,       GPIOB, 0)
+   ANA_IN_ENTRY(il2,       GPIOB, 0) \
+   ANA_IN_ENTRY(tmphs2,    GPIOC, 4) /* unconnected */ \
+   ANA_IN_ENTRY(tmphs3,    GPIOC, 5) /* unconnected */ \
+
+#define ANA_IN_LIST_TESLAM3 \
+   ANA_IN_ENTRY(throttle1, GPIOC, 0) /* swapped throttle inputs */ \
+   ANA_IN_ENTRY(throttle2, GPIOC, 1) \
+   ANA_IN_ENTRY(udc,       GPIOC, 3) \
+   ANA_IN_ENTRY(tmpm,      GPIOC, 2) \
+   ANA_IN_ENTRY(tmphs,     GPIOC, 4) \
+   ANA_IN_ENTRY(uaux,      GPIOA, 3) \
+   ANA_IN_ENTRY(il1,       GPIOA, 5) \
+   ANA_IN_ENTRY(il2,       GPIOB, 0) \
+   ANA_IN_ENTRY(tmphs2,    GPIOA, 0) \
+   ANA_IN_ENTRY(tmphs3,    GPIOA, 1) \
 
 #endif // ANAIN_PRJ_H_INCLUDED

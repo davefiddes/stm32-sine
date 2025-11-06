@@ -668,6 +668,19 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
          tmphsi = MIN(bmwAdcValues[0], MIN(bmwAdcValues[1], bmwAdcValues[2]));
          tmphs = TempMeas::Lookup(tmphsi, snshs);
       }
+      else if (hwRev == HW_TESLAM3)
+      {
+         // The Tesla M3 has 3 heatsink sensors:
+         // ST1 (tmphsi)  - coolant input
+         // ST2 (tmphs2i) - phase B/C
+         // ST3 (tmphs3i) - phase C/A
+         int16_t tmphs2i = AnaIn::tmphs2.Get();
+         int16_t tmphs3i = AnaIn::tmphs3.Get();
+
+         tmphs = TempMeas::Lookup(tmphsi, snshs);
+         tmphs = MAX(tmphs, TempMeas::Lookup(tmphs2i, snshs));
+         tmphs = MAX(tmphs, TempMeas::Lookup(tmphs3i, snshs));
+      }
       else
       {
          tmphs = TempMeas::Lookup(tmphsi, snshs);

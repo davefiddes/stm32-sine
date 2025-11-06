@@ -257,6 +257,7 @@ HWREV io_setup()
          DIG_IO_CONFIGURE(DIG_IO_LIST_MG);
          break;
       case HW_TESLAM3:
+         ANA_IN_CONFIGURE(ANA_IN_LIST_TESLAM3);
          DIG_IO_CONFIGURE(DIG_IO_LIST_TESLAM3);
          break;
       case HW_BLUEPILL:
