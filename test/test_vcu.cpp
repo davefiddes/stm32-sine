@@ -205,6 +205,8 @@ AnaIn AnaIn::tmphs(2);
 AnaIn AnaIn::tmpm(3);
 AnaIn AnaIn::throttle1(4);
 AnaIn AnaIn::throttle2(5);
+AnaIn AnaIn::tmphs2(6);
+AnaIn AnaIn::tmphs3(7);
 
 void DigIo::Configure(uint32_t, uint16_t, PinMode::PinMode)
 {
