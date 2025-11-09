@@ -32,7 +32,8 @@ public:
       TEMP_NTCK45 = 5, /*hier muss ein NTC K45 2k2 verwendet werden, der mit einem Parallelwiderstand mit 2k verschaltet wird. Achtung: Der Parallelwiderstand ist im Schaltplan und Layout nicht vorhanden! */
       TEMP_LEAFHS = 6,
       TEMP_BMWI3HS = 7,
-      NUM_HS_SENSORS = 8,
+      TEMP_TESLAM3HS = 8,
+      NUM_HS_SENSORS = 9,
       TEMP_KTY83 = 12,
       TEMP_KTY84 = 13,
       TEMP_LEAF = 14,
@@ -661,6 +662,40 @@ public:
 2327	,\
 2454
 
+#define TESLAM3HS \
+23	,\
+31	,\
+43	,\
+58	,\
+78	,\
+104	,\
+137	,\
+180	,\
+233	,\
+299	,\
+380	,\
+476	,\
+589	,\
+719	,\
+875	,\
+1042	,\
+1224	,\
+1417	,\
+1619	,\
+1828	,\
+2036	,\
+2236	,\
+2428	,\
+2611	,\
+2782	,\
+2939	,\
+3082	,\
+3208	,\
+3319	,\
+3419	,\
+3506	,\
+3582	,\
+3649
 
 #endif
 

@@ -97,6 +97,9 @@ static const uint16_t OutlanderFront[] = { OUTLANDERFRONT };
 /* EPCOS B57861-S 103-F40 temp sensor */
 static const uint16_t epcosb57861[] = { EPCOSB57861 };
 
+/* EPCOS B57164K0473 temp sensor used in the Tesla M3 heatsink sensors */
+static const uint16_t TeslaM3Hs[] = { TESLAM3HS };
+
 static const TEMP_SENSOR sensors[] =
 {
    { -25, 105, 5,  TABLEN(JCurve),         NTC, JCurve     },
@@ -107,6 +110,7 @@ static const TEMP_SENSOR sensors[] =
    { -50, 150, 5,  TABLEN(NtcK45),         NTC, NtcK45     },
    { -10, 160, 10, TABLEN(leafhs),         NTC, leafhs     },
    { -25, 105, 5,  TABLEN(fs800),          PTC, fs800      },
+   { -40, 120, 5,  TABLEN(TeslaM3Hs),      NTC, TeslaM3Hs  },
    { -50, 170, 10, TABLEN(Kty83),          PTC, Kty83      },
    { -40, 300, 10, TABLEN(Kty84),          PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),           NTC, leaf       },

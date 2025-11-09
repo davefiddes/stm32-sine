@@ -76,7 +76,7 @@
     PARAM_ENTRY(CAT_INVERTER,udcgain,     "dig/V",   -100,   100,    6.175,  29  ) \
     PARAM_ENTRY(CAT_INVERTER,udcofs,      "dig",     0,      4095,   0,      77  ) \
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
-    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      7,      0,      45  ) \
+    PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      8,      0,      45  ) \
     PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
     PARAM_ENTRY(CAT_INVERTER,pumpspeed,   "dig",     0,      255,    255,    164 ) \
 
@@ -280,7 +280,7 @@
 #define PWMPOLS      "0=ActHigh, 1=ActLow"
 #define DIRS         "-1=Reverse, 0=Neutral, 1=Forward"
 #define TRIPMODES    "0=AllOff, 1=DcSwOn, 2=PrechargeOn, 3=AutoResume"
-#define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf, 7=BMW-i3"
+#define SNS_HS       "0=JCurve, 1=Semikron, 2=MBB600, 3=KTY81, 4=PT1000, 5=NTCK45_2k2, 6=Leaf, 7=BMW-i3, 8=TeslaM3"
 #define SNS_M        "12=KTY83-110, 13=KTY84-130, 14=Leaf, 15=KTY81-110, 16=Toyota, 21=OutlanderFront, 22=EpcosB57861-S, 23=ToyotaGen2"
 #define PWMFUNCS     "0=tmpm, 1=tmphs, 2=speed, 3=exciter"
 #define SINECURVES   "0=VoltageSlip, 1=Simultaneous"
