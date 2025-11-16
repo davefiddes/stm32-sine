@@ -100,6 +100,9 @@ static const uint16_t epcosb57861[] = { EPCOSB57861 };
 /* EPCOS B57164K0473 temp sensor used in the Tesla M3 heatsink sensors */
 static const uint16_t TeslaM3Hs[] = { TESLAM3HS };
 
+/* Tesla M3 motor sensor with 1k from 3.3V and 47K to GND */
+static const uint16_t TeslaM3Motor[] = { TESLAM3MOTOR };
+
 static const TEMP_SENSOR sensors[] =
 {
    { -25, 105, 5,  TABLEN(JCurve),         NTC, JCurve     },
@@ -123,6 +126,7 @@ static const TEMP_SENSOR sensors[] =
    { -40, 300, 10, TABLEN(OutlanderFront), NTC, OutlanderFront },
    { -50, 150, 10, TABLEN(epcosb57861),    NTC, epcosb57861},
    { -20, 200, 5,  TABLEN(ToyotaGen2),     NTC, ToyotaGen2 },
+   { -40, 120, 5,  TABLEN(TeslaM3Motor),   NTC, TeslaM3Motor }
 };
 
 float TempMeas::Lookup(int digit, Sensors sensorId)
