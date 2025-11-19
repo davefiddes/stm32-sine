@@ -45,12 +45,12 @@ public:
     //! \brief Which phase a given gate driver chip corresponds to
     enum Phase
     {
-        PhaseAHigh = 0,
-        PhaseALow = 1,
-        PhaseBHigh = 2,
-        PhaseBLow = 3,
-        PhaseCHigh = 4,
-        PhaseCLow = 5
+        PhaseBLow = 0,
+        PhaseBHigh = 1,
+        PhaseCLow = 2,
+        PhaseCHigh = 3,
+        PhaseALow = 4,
+        PhaseAHigh = 5
     };
 
     //! \brief Possible gate driver chip status bitfield values
