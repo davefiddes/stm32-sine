@@ -42,15 +42,17 @@ template <typename SpiDriverT>
 class GateDriver
 {
 public:
-    //! \brief Which phase a given gate driver chip corresponds to
+    //! \brief Which phase a given gate driver chip corresponds to.
+    //! The order matches the physical layout on the Tesla M3 inverter board.
+    //! The first data to be clocked out comes from the last chip in the chain.
     enum Phase
     {
         PhaseAHigh = 0,
         PhaseALow = 1,
-        PhaseBHigh = 2,
-        PhaseBLow = 3,
-        PhaseCHigh = 4,
-        PhaseCLow = 5
+        PhaseCHigh = 2,
+        PhaseCLow = 3,
+        PhaseBHigh = 4,
+        PhaseBLow = 5
     };
 
     //! \brief Possible gate driver chip status bitfield values
