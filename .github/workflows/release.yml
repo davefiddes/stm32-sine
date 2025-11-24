@@ -19,7 +19,7 @@ jobs:
         control: [sine,foc]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Needed for git describe
           submodules: recursive
@@ -45,7 +45,7 @@ jobs:
           cp stm32_${{ matrix.control }}.hex stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.hex
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: stm32_${{ matrix.control }}-firmware
           path: |
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: recursive
@@ -66,7 +66,7 @@ jobs:
           ./scripts/git-archive-all.sh --format tar.gz --prefix stm32-sine-${{ github.event.inputs.tag }}/ stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
 
       - name: Upload source tarball
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: source-tarball
           path: stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
@@ -78,7 +78,7 @@ jobs:
       contents: write  # IMPORTANT: mandatory for making GitHub Releases
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: artifacts
 
