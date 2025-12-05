@@ -19,6 +19,9 @@
  */
 #include "stub_canhardware.h"
 
+// Suppress warnings about unused parameters in stub functions
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 CanCallback* vcuCan = nullptr;
 uint32_t vcuCanId;
 

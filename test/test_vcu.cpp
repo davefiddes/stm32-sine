@@ -26,6 +26,7 @@
 #include "vehiclecontrol.h"
 #include "stub_canhardware.h"
 #include "test.h"
+#include <memory>
 
 static uint32_t crc32_word(uint32_t Crc, uint32_t Data);
 
@@ -39,6 +40,8 @@ class VCUTest: public UnitTest
    public:
       VCUTest(const std::list<VoidFunction>* cases): UnitTest(cases) {}
       virtual void TestCaseSetup();
+
+   std::unique_ptr<CanStub> canStub;
 };
 
 static void FillInCanData(uint32_t* data, uint32_t pot, uint32_t pot2, uint32_t canio, uint32_t cruisespeed, uint32_t regenPreset, uint32_t seq)
@@ -54,7 +57,7 @@ static void FillInCanData(uint32_t* data, uint32_t pot, uint32_t pot2, uint32_t 
 static void CanTest1()
 {
    ASSERT(vcuCan != 0);
-   ASSERT(vcuCanId == Param::GetInt(Param::controlid));
+   ASSERT(vcuCanId == static_cast<uint32_t>(Param::GetInt(Param::controlid)));
 }
 
 static void CanTest2()
@@ -133,7 +136,8 @@ static void TestCanSeqError2()
 
 void VCUTest::TestCaseSetup()
 {
-   VehicleControl::SetCan(new CanStub());
+   canStub = std::make_unique<CanStub>();
+   VehicleControl::SetCan(canStub.get());
    Param::LoadDefaults();
 }
 
@@ -249,7 +253,7 @@ int Encoder::GetRotorDirection()
    return 1;
 }
 
-void Param::Change(Param::PARAM_NUM p)
+void Param::Change([[maybe_unused]] Param::PARAM_NUM p)
 {
 
 }

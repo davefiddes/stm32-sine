@@ -25,7 +25,6 @@
 using namespace std;
 
 int _failedAssertions = 0;
-static int testIdx = 0;
 static list<UnitTest*> testList;
 
 int main()

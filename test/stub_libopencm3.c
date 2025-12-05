@@ -18,6 +18,9 @@
  */
 #include "stdint.h"
 
+// Suppress warnings about unused parameters in stub functions
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 void flash_unlock(void)
 {
 }

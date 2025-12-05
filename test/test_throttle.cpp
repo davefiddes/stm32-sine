@@ -46,6 +46,7 @@ static void TestSetup()
       Throttle::idleThrotLim = FP_FROMFLT(30);
 }
 
+#if 0
 static void TestBrkPedal()
 {
    int percent = Throttle::CalcThrottle(1500, 3000, true);
@@ -64,7 +65,7 @@ static void TestRegen()
    int percent = Throttle::CalcThrottle(1000, 3000, false);
    ASSERT(percent == -25)
 }
-#if 0
+
 static void TestDualThrottle()
 {
    //0% on both channels

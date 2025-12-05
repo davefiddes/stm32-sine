@@ -33,7 +33,6 @@ class FPTest: public UnitTest
 
 static void TestAtan2()
 {
-   uint16_t res;
    ASSERT(SineCore::Atan2(4096, 0) == 0); //0°
    ASSERT(SineCore::Atan2(2896, 2896) == 8192); //45°
    ASSERT(SineCore::Atan2(-4096, 0) == 32768); //180°
