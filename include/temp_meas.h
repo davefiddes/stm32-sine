@@ -664,8 +664,6 @@ public:
 2454
 
 #define TESLAM3HS \
-23	,\
-31	,\
 43	,\
 58	,\
 78	,\
@@ -699,8 +697,6 @@ public:
 3649
 
 #define TESLAM3MOTOR \
-52	,\
-72	,\
 100	,\
 136	,\
 183	,\

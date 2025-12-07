@@ -113,7 +113,7 @@ static const TEMP_SENSOR sensors[] =
    { -50, 150, 5,  TABLEN(NtcK45),         NTC, NtcK45     },
    { -10, 160, 10, TABLEN(leafhs),         NTC, leafhs     },
    { -25, 105, 5,  TABLEN(fs800),          PTC, fs800      },
-   { -40, 120, 5,  TABLEN(TeslaM3Hs),      NTC, TeslaM3Hs  },
+   { -30, 120, 5,  TABLEN(TeslaM3Hs),      NTC, TeslaM3Hs  },
    { -50, 170, 10, TABLEN(Kty83),          PTC, Kty83      },
    { -40, 300, 10, TABLEN(Kty84),          PTC, Kty84      },
    { -20, 150, 10, TABLEN(leaf),           NTC, leaf       },
@@ -126,7 +126,7 @@ static const TEMP_SENSOR sensors[] =
    { -40, 300, 10, TABLEN(OutlanderFront), NTC, OutlanderFront },
    { -50, 150, 10, TABLEN(epcosb57861),    NTC, epcosb57861},
    { -20, 200, 5,  TABLEN(ToyotaGen2),     NTC, ToyotaGen2 },
-   { -40, 120, 5,  TABLEN(TeslaM3Motor),   NTC, TeslaM3Motor }
+   { -30, 120, 5,  TABLEN(TeslaM3Motor),   NTC, TeslaM3Motor }
 };
 
 float TempMeas::Lookup(int digit, Sensors sensorId)
