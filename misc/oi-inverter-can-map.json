@@ -1,0 +1,47 @@
+{
+    "version": 2,
+    "tx": [
+        {
+            "can_id": 400,
+            "params": [
+                {
+                    "param": "opmode",
+                    "position": 0,
+                    "length": 8,
+                    "gain": 1.0,
+                    "offset": 0
+                },
+                {
+                    "param": "udc",
+                    "position": 8,
+                    "length": 16,
+                    "gain": 10.0,
+                    "offset": 0
+                },
+                {
+                    "param": "speed",
+                    "position": 24,
+                    "length": 16,
+                    "gain": 1.0,
+                    "offset": 0
+                },
+                {
+                    "param": "tmphs",
+                    "position": 40,
+                    "length": 8,
+                    "gain": 1.0,
+                    "offset": 30
+                },
+                {
+                    "param": "tmpm",
+                    "position": 48,
+                    "length": 8,
+                    "gain": 1.0,
+                    "offset": 30
+                }
+            ],
+            "is_extended_frame": false
+        }
+    ],
+    "rx": []
+}

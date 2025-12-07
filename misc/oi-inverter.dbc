@@ -32,26 +32,44 @@ NS_ :
     SG_MUL_VAL_
 
 BS_: 
-BU_: 
-BO_ 2147483711 Vector__XXXMsg99: 8 Vector__XXX
-   SG_ pot : 0|12@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ pot2 : 12|12@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ cruise : 24|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ start : 25|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ brake : 26|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ forward : 27|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ reverse : 28|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ bms : 29|1@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ cruisespeed : 32|14@1+ (1,0) [0|1] "" Vector__XXX
-   SG_ regenpreset : 48|8@1+ (1,0) [0|1] "" Vector__XXX
+BU_: VCU Inverter 
+BO_ 400 InverterFeedback: 8 Inverter
+   SG_ Inv_Voltage : 8|16@1+ (0.1,0) [0|6553.5] "V" VCU
+   SG_ Inv_Speed : 24|16@1+ (1,0) [0|65535] "rpm" VCU
+   SG_ Inv_Opmode : 7|8@0+ (1,0) [0|255] "" VCU
+   SG_ Inv_MotorTemp : 55|8@0+ (1,-30) [-30|225] "C" VCU
+   SG_ Inv_HeatsinkTemp : 47|8@0+ (1,-30) [-30|225] "C" VCU
 
+BO_ 2147483711 InverterControl: 8 VCU
+   SG_ pot : 0|12@1+ (1,0) [0|1] "" Inverter
+   SG_ pot2 : 12|12@1+ (1,0) [0|1] "" Inverter
+   SG_ cruise : 24|1@1+ (1,0) [0|1] "" Inverter
+   SG_ start : 25|1@1+ (1,0) [0|1] "" Inverter
+   SG_ brake : 26|1@1+ (1,0) [0|1] "" Inverter
+   SG_ forward : 27|1@1+ (1,0) [0|1] "" Inverter
+   SG_ reverse : 28|1@1+ (1,0) [0|1] "" Inverter
+   SG_ bms : 29|1@1+ (1,0) [0|1] "" Inverter
+   SG_ cruisespeed : 32|14@1+ (1,0) [0|1] "" Inverter
+   SG_ regenpreset : 48|8@1+ (1,0) [0|1] "" Inverter
+   SG_ canrun1 : 30|2@1+ (1,0) [0|3] "" Inverter
+   SG_ canrun2 : 46|2@1+ (1,0) [0|3] "" Inverter
+   SG_ cancrc : 56|8@1+ (1,0) [0|255] "" Inverter
+
+CM_ BU_ Inverter "stm32-sine compatible inverter";
 BA_DEF_ BO_ "GenMsgBackgroundColor" STRING ;
 BA_DEF_ BO_ "GenMsgForegroundColor" STRING ;
+BA_DEF_ BO_ "matchingcriteria" INT 0 0;
+BA_DEF_ BO_ "filterlabeling" INT 0 0;
+BA_DEF_ BO_ "matchingcriteria" INT 0 0;
+BA_DEF_ BO_ "filterlabeling" INT 0 0;
 BA_DEF_ BO_ "matchingcriteria" INT 0 0;
 BA_DEF_ BO_ "filterlabeling" INT 0 0;
 BA_DEF_DEF_ "GenMsgBackgroundColor" "#ffffff";
 BA_DEF_DEF_ "GenMsgForegroundColor" "#000000";
 BA_DEF_DEF_ "matchingcriteria" 0;
 BA_DEF_DEF_ "filterlabeling" 1;
-BA_ "GenMsgForegroundColor" BO_ 2147483711 "#000000";
+BA_DEF_DEF_ "matchingcriteria" 0;
+BA_DEF_DEF_ "filterlabeling" 1;
 BA_ "GenMsgBackgroundColor" BO_ 2147483711 "#57e389";
+BA_ "GenMsgForegroundColor" BO_ 2147483711 "#000000";
+VAL_ 400 Inv_Opmode 2 "ManualRun" 1 "Run" 0 "Off";
