@@ -24,7 +24,7 @@
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 165
+//Next param id (increase when adding new parameter!): 166
 //Next value Id: 2067
 /*              category     name         unit       min     max     default id */
 
@@ -94,6 +94,7 @@
     PARAM_ENTRY(CAT_DERATE,  idcflt,      "dig",     0,      11,    9,       132 ) \
     PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
     PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
+    PARAM_ENTRY(CAT_DERATE,  tmpoilmax,   "°C",      70,     300,   300,     165 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_DERATE,  accelmax,    "rpm/10ms",1,      1000,  1000,    153 ) \

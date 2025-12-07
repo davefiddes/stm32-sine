@@ -313,6 +313,12 @@ float VehicleControl::ProcessThrottle()
       ErrorMessage::Post(ERR_TMPMMAX);
    }
 
+   if (Throttle::TemperatureDerate(Param::GetFloat(Param::tmpoil), Param::GetFloat(Param::tmpoilmax), finalSpnt))
+   {
+      DigIo::err_out.Set();
+      ErrorMessage::Post(ERR_TMPOILMAX);
+   }
+
    Param::SetFloat(Param::potnom, finalSpnt);
 
    if (finalSpnt < Param::GetFloat(Param::brklightout))
