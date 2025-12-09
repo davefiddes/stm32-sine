@@ -53,12 +53,18 @@ jobs:
         run: |
           libopeninv/test/test_libopeninv
 
+      - name: Prepare firmware package contents
+        run: |
+          mkdir -p firmware_package
+          cp stm32_sine.bin firmware_package/
+          cp stm32_sine.hex firmware_package/
+          cp stm32_foc.bin firmware_package/
+          cp stm32_foc.hex firmware_package/
+          cp misc/oi-inverter-can-map.json firmware_package/
+          cp misc/oi-inverter.dbc firmware_package/
+          cp misc/tesla-m3-du-foc-params.json firmware_package/
+
       - uses: actions/upload-artifact@v5
         with:
           name: stm32-sine-${{ env.GIT_DESCRIBE }}-firmware
-          path: |
-            stm32_sine.*
-            stm32_foc.*
-            misc/oi-inverter-can-map.json
-            misc/oi-inverter.dbc
-            misc/tesla-m3-du-foc-params.json
+          path: firmware_package
