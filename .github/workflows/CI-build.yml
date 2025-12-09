@@ -56,11 +56,11 @@ jobs:
       - name: Prepare firmware package contents
         run: |
           mkdir -p firmware_package
-          cp stm32_sine.bin firmware_package/
-          cp stm32_sine.hex firmware_package/
-          cp stm32_foc.bin firmware_package/
-          cp stm32_foc.hex firmware_package/
-          cp misc/oi-inverter-can-map.json firmware_package/
+          cp stm32_sine.bin firmware_package/stm32_sine-${{ env.GIT_DESCRIBE }}.bin
+          cp stm32_sine.hex firmware_package/stm32_sine-${{ env.GIT_DESCRIBE }}.hex
+          cp stm32_foc.bin firmware_package/stm32_foc-${{ env.GIT_DESCRIBE }}.bin
+          cp stm32_foc.hex firmware_package/stm32_foc-${{ env.GIT_DESCRIBE }}.hex
+          cp misc/oi-inverter-can-map*.json firmware_package/
           cp misc/oi-inverter.dbc firmware_package/
           cp misc/tesla-m3-du-foc-params.json firmware_package/
 
