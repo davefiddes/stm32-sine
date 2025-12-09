@@ -37,6 +37,7 @@
 #include "digio.h"
 #include "errormessage.h"
 #include "params.h"
+#include "my_math.h"
 #include <libopencm3/stm32/usart.h>
 
 // LIN protocol PID definitions
@@ -56,6 +57,10 @@ static const uint8_t MaxLoopTicks = 10;
 //! \brief Maximum time we are prepared to wait for a valid response from the
 //! pump in 10ms ticks
 static const uint16_t StatusTimeout = 500;
+
+//! \brief Lowest permitted oil temperature
+static const int MinimumOilTemp = -30;
+
 
 /**
  * \brief Initialise the oil pump controller
@@ -136,10 +141,15 @@ void TeslaM3OilPump::ProcessStatusResponse()
    {
       uint8_t* data = lin->GetReceivedBytes();
 
-      Param::SetInt(Param::tmpoil, data[3] - 40); // Motor oil temperature
-      Param::SetFloat(
-         Param::oilpres,
-         (data[2] * 2) * 0.14503); // Motor oil pressure in psi
+      // Motor oil temperature
+      // We limit to a minimum value to avoid underflowing the common
+      // OI CAN map temp offset
+      int tmpoil = MAX(MinimumOilTemp, data[3] - 40);
+      Param::SetInt(Param::tmpoil, tmpoil);
+
+      // Motor oil pressure in psi
+      Param::SetFloat(Param::oilpres, (data[2] * 2) * 0.14503);
+
       ticksSinceLastResponse = 0;
    }
    else if (lin->HasReceived(VoltageSpeedStatusPID, VoltageSpeedStatusLen))
@@ -170,7 +180,7 @@ void TeslaM3OilPump::CheckForFaults()
       ErrorMessage::Post(ERR_OILPUMPFAULT);
 
       // Set default values to indicate a fault condition
-      Param::SetInt(Param::tmpoil, 0);
+      Param::SetInt(Param::tmpoil, MinimumOilTemp);
       Param::SetInt(Param::oilpres, 0);
       Param::SetInt(Param::upmp, 0);
       Param::SetInt(Param::pmprev, 0);
