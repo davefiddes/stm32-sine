@@ -36,10 +36,11 @@ static void TestSetup()
       Throttle::potmax[0] = 2000;
       Throttle::potmin[1] = 3000;
       Throttle::potmax[1] = 4000;
+      Throttle::linearity = 0.999;
       Throttle::brknom = 30;
       Throttle::brknompedal = -60;
       Throttle::regenRamp = 25;
-      Throttle::brkmax = 50;
+      Throttle::brkmax = -50;
       Throttle::idleSpeed = 100;
       Throttle::speedkp = FP_FROMFLT(0.25);
       Throttle::speedflt = 5;
@@ -65,7 +66,29 @@ static void TestRegen()
    int percent = Throttle::CalcThrottle(1000, 3000, false);
    ASSERT(percent == -25)
 }
+#endif
 
+static void TestLinearity()
+{
+   float percent = Throttle::CalcThrottle(0, 100, false);
+   ASSERT((int)percent == -50)
+   percent = Throttle::CalcThrottle(100, 100, false);
+   ASSERT((int)percent == 100)
+   percent = Throttle::CalcThrottle(65, 100, false);
+   ASSERT((int)percent == 49)
+   Throttle::linearity = 0.5;
+   percent = Throttle::CalcThrottle(100, 100, false);
+   ASSERT((int)percent == 100)
+   percent = Throttle::CalcThrottle(65, 100, false);
+   ASSERT((int)percent == 37)
+   Throttle::linearity = 0;
+   percent = Throttle::CalcThrottle(100, 100, false);
+   ASSERT((int)percent == 100)
+   percent = Throttle::CalcThrottle(65, 100, false);
+   ASSERT((int)percent == 25)
+}
+
+#if 0
 static void TestDualThrottle()
 {
    //0% on both channels
@@ -135,4 +158,4 @@ static void TestDualThrottle()
 #endif
 
 //This line registers the test
-REGISTER_TEST(ThrottleTest, TestSetup);
+REGISTER_TEST(ThrottleTest, TestSetup, TestLinearity);
