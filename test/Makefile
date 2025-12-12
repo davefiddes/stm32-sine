@@ -9,7 +9,7 @@ LDFLAGS     = -g -fsanitize=undefined,address
 BINARY		= test_sine
 OBJSL = test_main.o fu.o test_fu.o test_fp.o test_vcu.o my_fp.o my_string.o params.o vehiclecontrol.o GD31xxOI.o \
 			  test_throttle.o throttle.o sine_core.o temp_meas.o stub_canhardware.o \
-			  stub_libopencm3.o test_throttle_tempderate.o
+			  stub_libopencm3.o test_throttle_tempderate.o test_oiltempcontroller.o oiltempcontroller.o
 
 OBJS     = $(patsubst %.o,obj/%.o, $(OBJSL))
 DEPENDS  = $(patsubst %.o,obj/%.d, $(OBJSL))

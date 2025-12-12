@@ -36,8 +36,8 @@
 #include "teslam3oilpump.h"
 #include "digio.h"
 #include "errormessage.h"
-#include "params.h"
 #include "my_math.h"
+#include "params.h"
 #include <libopencm3/stm32/usart.h>
 
 // LIN protocol PID definitions
@@ -61,12 +61,11 @@ static const uint16_t StatusTimeout = 500;
 //! \brief Lowest permitted oil temperature
 static const int MinimumOilTemp = -30;
 
-
 /**
  * \brief Initialise the oil pump controller
  */
 TeslaM3OilPump::TeslaM3OilPump()
-: lin(nullptr), tickCount(0), ticksSinceLastResponse(0)
+: lin(nullptr), tickCount(0), ticksSinceLastResponse(0), oilTempController()
 {
 }
 
@@ -127,7 +126,7 @@ void TeslaM3OilPump::SendSpeedRequest()
 {
    uint8_t lindata[SpeedRequestLen];
    lindata[0] = 0xFF;
-   lindata[1] = Param::GetInt(Param::pumpspeed);
+   lindata[1] = oilTempController.PumpSpeed();
    lin->Request(SpeedRequestPID, lindata, sizeof(lindata));
 }
 
@@ -185,4 +184,13 @@ void TeslaM3OilPump::CheckForFaults()
       Param::SetInt(Param::upmp, 0);
       Param::SetInt(Param::pmprev, 0);
    }
+}
+
+/**
+ * \brief Update the oil temperature controller state at a more leisurely
+ * rate
+ */
+void TeslaM3OilPump::Ms100Task()
+{
+   oilTempController.Ms100Task();
 }

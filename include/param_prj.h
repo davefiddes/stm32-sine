@@ -24,7 +24,7 @@
    2. Temporary parameters
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 166
+//Next param id (increase when adding new parameter!): 169
 //Next value Id: 2067
 /*              category     name         unit       min     max     default id */
 
@@ -78,7 +78,6 @@
     PARAM_ENTRY(CAT_INVERTER,udclim,      "V",       0,      1000,   540,    48  ) \
     PARAM_ENTRY(CAT_INVERTER,snshs,       SNS_HS,    0,      8,      0,      45  ) \
     PARAM_ENTRY(CAT_INVERTER,pinswap,     SWAPS,     0,      15,     0,      109 ) \
-    PARAM_ENTRY(CAT_INVERTER,pumpspeed,   "dig",     0,      255,    255,    164 ) \
 
 #define INVERTER_PARAMETERS_FOC \
     PARAM_ENTRY(CAT_INVERTER,modmax,      "dig",     37000,  45000,  37836,  148 )
@@ -94,7 +93,6 @@
     PARAM_ENTRY(CAT_DERATE,  idcflt,      "dig",     0,      11,    9,       132 ) \
     PARAM_ENTRY(CAT_DERATE,  tmphsmax,    "°C",      50,     150,   85,      125 ) \
     PARAM_ENTRY(CAT_DERATE,  tmpmmax,     "°C",      70,     300,   300,     127 ) \
-    PARAM_ENTRY(CAT_DERATE,  tmpoilmax,   "°C",      70,     300,   300,     165 ) \
     PARAM_ENTRY(CAT_DERATE,  throtmax,    "%",       0,      100,   100,     97  ) \
     PARAM_ENTRY(CAT_DERATE,  throtmin,    "%",       -100,   0,     -100,    119 ) \
     PARAM_ENTRY(CAT_DERATE,  accelmax,    "rpm/10ms",1,      1000,  1000,    153 ) \
@@ -166,6 +164,13 @@
     PARAM_ENTRY(CAT_COMM,    controlid,   "",        1,      2047,   63,     156 ) \
     PARAM_ENTRY(CAT_COMM,    controlcheck,CHECKS,    0,      1,      1,      157 ) \
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
+
+#define TESLA_M3_OIL_PUMP_PARAMETERS \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoilmax,   "°C",     70,    300,    300,      165 ) \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoilhigh,  "°C",     10,    300,     45,      166 ) \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoillow,   "°C",     10,    300,     25,      167 ) \
+    PARAM_ENTRY(CAT_OILPUMP, pumpspeed,   "dig",     0,    255,     70,      164 ) \
+    PARAM_ENTRY(CAT_OILPUMP, pumpspeedidle,"dig",    0,    255,     17,      168 ) \
 
 #define VALUE_BLOCK1 \
     VALUE_ENTRY(version,     VERSTR,  2039 ) \
@@ -248,6 +253,7 @@
     DERATE_PARAMETERS_SINE \
     CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
+    TESLA_M3_OIL_PUMP_PARAMETERS \
     TESTP_ENTRY(CAT_TEST,    fslipspnt,   "Hz",      -100,   1000,   0,      151 ) \
     TESTP_ENTRY(CAT_TEST,    ampnom,      "%",       0,      100,    0,      152 ) \
     VALUE_BLOCK1 \
@@ -267,6 +273,7 @@
     DERATE_PARAMETERS_COMMON \
     CHARGER_PARAMETERS \
     AUTOMATION_CONTACT_PWM_COMM_PARAMETERS \
+    TESLA_M3_OIL_PUMP_PARAMETERS \
     TESTP_ENTRY(CAT_TEST,    manualiq,    "A",       -400,   400,    0,      151 ) \
     TESTP_ENTRY(CAT_TEST,    manualid,    "A",       -400,   400,    0,      152 ) \
     VALUE_BLOCK1 \
@@ -314,6 +321,7 @@
 #define CAT_TEST     "Testing"
 #define CAT_CHARGER  "Charger"
 #define CAT_COMM     "Communication"
+#define CAT_OILPUMP  "Oil Pump"
 
 /***** enums ******/
 

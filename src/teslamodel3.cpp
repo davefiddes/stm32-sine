@@ -224,6 +224,8 @@ void TeslaModel3::Ms100Task()
     {
         powerOffCountdown = PowerOffDelay;
     }
+
+    oilpump.Ms100Task();
 }
 
 /**

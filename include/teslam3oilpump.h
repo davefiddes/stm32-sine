@@ -38,6 +38,7 @@
 #define TESLAM3OILPUMP_H
 
 #include "linbus.h"
+#include "oiltempcontroller.h"
 #include <stdint.h>
 
 class TeslaM3OilPump
@@ -47,6 +48,7 @@ public:
 
    void SetLinInterface(LinBus* l);
    void Ms10Task();
+   void Ms100Task();
 
 private:
    void SendSpeedRequest();
@@ -54,9 +56,10 @@ private:
    void CheckForFaults();
 
 private:
-   LinBus* lin;
-   uint8_t tickCount;
-   uint16_t ticksSinceLastResponse;
+   LinBus*           lin;
+   uint8_t           tickCount;
+   uint16_t          ticksSinceLastResponse;
+   OilTempController oilTempController;
 };
 
 #endif // TESLAM3OILPUMP_H
