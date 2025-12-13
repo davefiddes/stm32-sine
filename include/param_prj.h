@@ -167,9 +167,9 @@
     TESTP_ENTRY(CAT_TEST,    manualstart, ONOFF,     0,      1,      0,      150 ) \
 
 #define TESLA_M3_OIL_PUMP_PARAMETERS \
-    PARAM_ENTRY(CAT_OILPUMP, tmpoilmax,   "°C",     70,    300,    300,      165 ) \
-    PARAM_ENTRY(CAT_OILPUMP, tmpoilhigh,  "°C",     10,    300,     45,      166 ) \
-    PARAM_ENTRY(CAT_OILPUMP, tmpoillow,   "°C",     10,    300,     25,      167 ) \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoilmax,   "°C",     70,    100,    100,      165 ) \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoilhigh,  "°C",     10,    100,     45,      166 ) \
+    PARAM_ENTRY(CAT_OILPUMP, tmpoillow,   "°C",     10,    100,     25,      167 ) \
     PARAM_ENTRY(CAT_OILPUMP, pumpspeed,   "dig",     0,    255,     70,      164 ) \
     PARAM_ENTRY(CAT_OILPUMP, pumpspeedidle,"dig",    0,    255,     17,      168 ) \
 
