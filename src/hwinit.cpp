@@ -146,7 +146,8 @@ static bool is_existent(uint32_t port, uint16_t pin)
    return isExistent;
 }
 
-static HWREV ReadVariantResistor()
+//! \brief Initialise ADC for reading the variant resistor
+static void InitVariantAdc()
 {
    adc_power_off(ADC1);
    uint8_t channels[1] = { 15 };
@@ -158,22 +159,45 @@ static HWREV ReadVariantResistor()
 	uDelay(1);
    adc_reset_calibration(ADC1);
    adc_calibrate(ADC1);
+}
 
-   //Read the board variant resistor divider with one injected conversion
+//! \brief Read the variant resistor ADC channel with a single injected conversion
+static uint16_t ReadVariantAdc()
+{
    adc_start_conversion_injected(ADC1);
    while (!adc_eoc_injected(ADC1));
-   uint16_t result1 = adc_read_injected(ADC1, 1);
-
+   uint16_t result = adc_read_injected(ADC1, 1);
    adc_clear_flag(ADC1, ADC_SR_JEOC);
+
+   return result;
+}
+
+//! \brief Read the variant resistor for designs that use the high density
+//! STM32F103VC and return the detected hardware revision
+static HWREV ReadHighDensityVariant()
+{
+   uint16_t result = ReadVariantAdc();
+
+   if (result > 327 && result < 347) return HW_MG;
+   else if (result > 395 && result < 419) return HW_TESLAM3;
+   else return HW_MINI;
+}
+
+//! \brief Read the variant resistor for mini mainboard variants and return
+//! the detected hardware revision
+static HWREV ReadMiniMainboardVariant()
+{
+   uint16_t result1 = ReadVariantAdc();
 
    //Now enable the pull-up resistor, roughly 30k
    //If we read about 3V now it seems that no variant resistor is connected
    //In that case we just return the generic MiniMainboard
    gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO5);
    gpio_set(GPIOC, GPIO5);
-   adc_start_conversion_injected(ADC1);
-   while (!adc_eoc_injected(ADC1));
-   uint16_t result2 = adc_read_injected(ADC1, 1);
+
+   uint16_t result2 = ReadVariantAdc();
+
+   //Set pin back to floating to not interfere with normal operation
    gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT, GPIO5);
    gpio_clear(GPIOC, GPIO5);
 
@@ -182,18 +206,18 @@ static HWREV ReadVariantResistor()
    else if (result2 > 3700) return HW_MINI; //might have to compare this against result1 later
    else if (result1 > 510 && result1 < 616) return HW_LEAF3;
    else if (result1 > 624 && result1 < 670) return HW_ZOE;
-   else if (result1 > 327 && result1 < 347) return HW_MG;
-   else if (result1 > 395 && result1 < 419) return HW_TESLAM3;
    else return HW_MINI;
 }
 
 HWREV detect_hw()
 {
+   InitVariantAdc();
+
    // For STM32F103VC based designs just read the variant resistor as the other
    // pins are used for other purposes like LIN and SPI
    if (desig_get_flash_size() >= 256)
    {
-      return ReadVariantResistor();
+      return ReadHighDensityVariant();
    }
 
    //Check if PB3 and PC10 are connected (mini mainboard)
@@ -207,7 +231,7 @@ HWREV detect_hw()
       {
          //PC10 back to input
          gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO10);
-         return ReadVariantResistor();
+         return ReadMiniMainboardVariant();
       }
    }
 
