@@ -158,7 +158,7 @@ void PwmGeneration::SetOpmode(int _opmode)
 
 extern "C" void tim1_brk_isr(void)
 {
-   if (hwRev == HW_TESLAM3 || hwRev == HW_MG)
+   if (hwRev == HW_TESLAM3RDU || hwRev == HW_TESLAM3FDU || hwRev == HW_MG)
    {
       // On the Tesla M3 and MG inverters there are only two sources of
       // break signals. Only over-current is separately checkable.

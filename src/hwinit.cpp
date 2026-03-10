@@ -179,7 +179,8 @@ static HWREV ReadHighDensityVariant()
    uint16_t result = ReadVariantAdc();
 
    if (result > 327 && result < 347) return HW_MG;
-   else if (result > 395 && result < 419) return HW_TESLAM3;
+   else if (result > 395 && result < 419) return HW_TESLAM3RDU;
+   else if (result > 641 && result < 680) return HW_TESLAM3FDU;
    else return HW_MINI;
 }
 
@@ -280,7 +281,8 @@ HWREV io_setup()
       case HW_MG:
          DIG_IO_CONFIGURE(DIG_IO_LIST_MG);
          break;
-      case HW_TESLAM3:
+      case HW_TESLAM3RDU:
+      case HW_TESLAM3FDU:
          ANA_IN_CONFIGURE(ANA_IN_LIST_TESLAM3);
          DIG_IO_CONFIGURE(DIG_IO_LIST_TESLAM3);
          break;

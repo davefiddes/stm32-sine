@@ -403,7 +403,7 @@ void VehicleControl::GetDigInputs()
    Param::SetInt(Param::din_reverse, DigIo::rev_in.Get() | ((canio & CAN_IO_REV) != 0));
    Param::SetInt(Param::din_bms, (canio & CAN_IO_BMS) != 0 || (hwRev == HW_TESLA ? false : DigIo::bms_in.Get()) );
 
-   if ( hwRev == HW_TESLAM3 || hwRev == HW_MG)
+   if (hwRev == HW_TESLAM3RDU || hwRev == HW_TESLAM3FDU || hwRev == HW_MG)
    {
       Param::SetInt(Param::din_ocur, DigIo::ocur_in.Get());
 
@@ -674,7 +674,7 @@ void VehicleControl::GetTemps(float& tmphs, float &tmpm)
          tmphsi = MIN(bmwAdcValues[0], MIN(bmwAdcValues[1], bmwAdcValues[2]));
          tmphs = TempMeas::Lookup(tmphsi, snshs);
       }
-      else if (hwRev == HW_TESLAM3)
+      else if (hwRev == HW_TESLAM3RDU || hwRev == HW_TESLAM3FDU)
       {
          // The Tesla M3 has 3 heatsink sensors:
          // ST1 (tmphsi)  - coolant input

@@ -290,7 +290,8 @@ void Param::Change(Param::PARAM_NUM paramNum)
       case Param::outmode:
          //disable for blue pill and Tesla M3
          if (
-            (hwRev == HW_BLUEPILL) || (hwRev == HW_TESLAM3) || (hwRev == HW_MG))
+            hwRev == HW_BLUEPILL || hwRev == HW_TESLAM3RDU ||
+            hwRev == HW_TESLAM3FDU || hwRev == HW_MG)
             return;
          switch (Param::GetInt(Param::outmode))
          {
@@ -464,7 +465,7 @@ int main(void)
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
    LinBus lin;
-   if (hwRev == HW_TESLAM3)
+   if (hwRev == HW_TESLAM3RDU || hwRev == HW_TESLAM3FDU)
    {
       TeslaModel3::Initialize(&lin);
       ms100Handler = &TeslaModel3::Ms100Task;
