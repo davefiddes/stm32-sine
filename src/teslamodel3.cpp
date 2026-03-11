@@ -157,7 +157,17 @@ void TeslaModel3::Initialize(LinBus* lin)
     DigIo::gate_ps_en.Set();
     uDelay(200000);
 
-    if (TeslaM3GateDriver::Init())
+    TeslaM3GateDriver::Variant variant;
+    if (hwRev == HW_TESLAM3FDU)
+    {
+        variant = TeslaM3GateDriver::FDU;
+    }
+    else
+    {
+        variant = TeslaM3GateDriver::RDU;
+    }
+
+    if (TeslaM3GateDriver::Init(variant))
     {
         TeslaM3GateDriver::Enable();
     }

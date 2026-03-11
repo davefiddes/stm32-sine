@@ -42,6 +42,13 @@ template <typename SpiDriverT>
 class GateDriver
 {
 public:
+    //! \brief Drive unit variant
+    enum Variant
+    {
+        RDU = 0,
+        FDU = 1
+    };
+
     //! \brief Which phase a given gate driver chip corresponds to.
     //! The order matches the physical layout on the Tesla M3 inverter board.
     //! The first data to be clocked out comes from the last chip in the chain.
@@ -77,7 +84,7 @@ public:
     };
 
 public:
-    static bool     Init();
+    static bool     Init(Variant variant = RDU);
     static bool     IsFaulty();
     static void     Enable();
     static void     Disable();
@@ -100,8 +107,10 @@ private:
 
 private:
     static const uint16_t NumDriverChips = 6;
-    static const Register GateDriverRegisterSetup[];
-    static const uint16_t RegisterSetupSize;
+    static const Register GateDriverRegisterSetupRDU[];
+    static const uint16_t RegisterSetupRDUSize;
+    static const Register GateDriverRegisterSetupFDU[];
+    static const uint16_t RegisterSetupSizeFDU;
     static const Register NullGateDriverRegister;
 
 private:
@@ -111,8 +120,10 @@ private:
     typedef uint16_t (*StatusParser)(uint16_t statusRegister);
 
 private:
-    static void SetupGateDrivers();
-    static bool VerifyGateDriverConfig();
+    static void SetupGateDrivers(const Register* config, uint16_t configSize);
+    static bool VerifyGateDriverConfig(
+        const Register* config,
+        uint16_t        configSize);
 
     static void SendCommand(uint16_t cmd);
     static void WriteRegister(const Register& reg);
@@ -132,15 +143,15 @@ private:
 };
 
 //
-//! \brief STGAP1AS gate driver register set up sequence
+//! \brief STGAP1AS gate driver register set up sequence for RDU variant
 //!
 //! The register set up sequence for each of 6 chips on the Tesla Model 3
 //! Inverter. Settings are applied to all chips or high/low-side drivers as
-//! required
+//! required. This applies to the Rear Drive Unit with SiC MOSFETS only.
 //!
 template <typename SpiDriverT>
 const typename GateDriver<SpiDriverT>::Register
-    GateDriver<SpiDriverT>::GateDriverRegisterSetup[] = {
+    GateDriver<SpiDriverT>::GateDriverRegisterSetupRDU[] = {
         { STGAP1AS_REG_CFG1,
           STGAP1AS_REG_CFG1_CRC_SPI | STGAP1AS_REG_CFG1_SD_FLAG |
               STGAP1AS_REG_CFG1_DT_800NS | STGAP1AS_REG_CFG1_IN_FILTER_500NS,
@@ -179,9 +190,62 @@ const typename GateDriver<SpiDriverT>::Register
     };
 
 template <typename SpiDriverT>
-const uint16_t GateDriver<SpiDriverT>::RegisterSetupSize =
-    sizeof(GateDriver<SpiDriverT>::GateDriverRegisterSetup) /
-    sizeof(GateDriverRegisterSetup[0]);
+const uint16_t GateDriver<SpiDriverT>::RegisterSetupRDUSize =
+    sizeof(GateDriver<SpiDriverT>::GateDriverRegisterSetupRDU) /
+    sizeof(GateDriverRegisterSetupRDU[0]);
+
+//
+//! \brief STGAP1AS gate driver register set up sequence for FDU variant
+//!
+//! The register set up sequence for each of 6 chips on the Tesla Model 3
+//! Inverter. Settings are applied to all chips or high/low-side drivers as
+//! required. This applies to the Front Drive Unit with IGBTs only.
+//!
+template <typename SpiDriverT>
+const typename GateDriver<SpiDriverT>::Register
+    GateDriver<SpiDriverT>::GateDriverRegisterSetupFDU[] = {
+        { STGAP1AS_REG_CFG1,
+          STGAP1AS_REG_CFG1_CRC_SPI | STGAP1AS_REG_CFG1_SD_FLAG |
+              STGAP1AS_REG_CFG1_DT_800NS | STGAP1AS_REG_CFG1_IN_FILTER_500NS,
+          All,
+          STGAP1AS_REG_CFG1_MASK },
+        { STGAP1AS_REG_CFG2,
+          STGAP1AS_REG_CFG2_SENSE_100MV | STGAP1AS_REG_CFG2_DESAT_CUR_1000UA |
+              STGAP1AS_REG_CFG2_DESAT_TH_6V,
+          All,
+          STGAP1AS_REG_CFG2_MASK },
+        { STGAP1AS_REG_CFG3,
+          STGAP1AS_REG_CFG3_2LTO_TH_10V | STGAP1AS_REG_CFG3_2LTO_TIME_DISABLED,
+          All,
+          STGAP1AS_REG_CFG3_MASK },
+        { STGAP1AS_REG_CFG4,
+          STGAP1AS_REG_CFG4_UVLO_LATCHED | STGAP1AS_REG_CFG4_VLON_TH_NEG_3V |
+              STGAP1AS_REG_CFG4_VHON_TH_10V,
+          LowSide,
+          STGAP1AS_REG_CFG4_MASK },
+        { STGAP1AS_REG_CFG4,
+          STGAP1AS_REG_CFG4_UVLO_LATCHED | STGAP1AS_REG_CFG4_VLON_TH_DISABLED |
+              STGAP1AS_REG_CFG4_VHON_TH_10V,
+          HighSide,
+          STGAP1AS_REG_CFG4_MASK },
+        { STGAP1AS_REG_CFG5,
+          STGAP1AS_REG_CFG5_2LTO_EN | STGAP1AS_REG_CFG5_DESAT_EN,
+          All,
+          STGAP1AS_REG_CFG5_MASK },
+        { STGAP1AS_REG_DIAG1CFG,
+          STGAP1AS_REG_DIAG1CFG_UVLOD_OVLOD |
+              STGAP1AS_REG_DIAG1CFG_UVLOH_UVLOL |
+              STGAP1AS_REG_DIAG1CFG_OVLOH_OVLOL |
+              STGAP1AS_REG_DIAG1CFG_DESAT_SENSE | STGAP1AS_REG_DIAG1CFG_TSD,
+          All,
+          STGAP1AS_REG_DIAG1CFG_MASK },
+        { STGAP1AS_REG_DIAG2CFG, 0, All, STGAP1AS_REG_DIAG2CFG }
+    };
+
+template <typename SpiDriverT>
+const uint16_t GateDriver<SpiDriverT>::RegisterSetupSizeFDU =
+    sizeof(GateDriver<SpiDriverT>::GateDriverRegisterSetupRDU) /
+    sizeof(GateDriverRegisterSetupRDU[0]);
 
 // Delays from STGAP1AS datasheet Table 6. DC operation electrical
 // characteristics - SPI Section
@@ -195,15 +259,33 @@ static const __attribute__((__unused__)) int OtherCommandDelay = 1;   // uSec
 //
 //! \brief Set up the isolated gate drivers
 //!
+//! \param variant The drive unit variant to set up the gate drivers for. This
+//!                parameter determines the specific configuration to apply.
+//!
 //! \return bool - True if gate drivers successfully initialised and verified
 //!
 template <typename SpiDriverT>
-bool GateDriver<SpiDriverT>::Init()
+bool GateDriver<SpiDriverT>::Init(Variant variant)
 {
     SpiDriverT::Init();
     ClearStatus();
-    SetupGateDrivers();
-    if (VerifyGateDriverConfig())
+
+    const Register* config;
+    uint16_t        configSize;
+
+    if (variant == RDU)
+    {
+        config = GateDriverRegisterSetupRDU;
+        configSize = RegisterSetupRDUSize;
+    }
+    else
+    {
+        config = GateDriverRegisterSetupFDU;
+        configSize = RegisterSetupSizeFDU;
+    }
+
+    SetupGateDrivers(config, configSize);
+    if (VerifyGateDriverConfig(config, configSize))
     {
         return !IsFaulty();
     }
@@ -283,7 +365,9 @@ uint16_t GateDriver<SpiDriverT>::GetStatus(Phase chip)
 //! \brief Run through the set up sequence for all gate driver chips
 //!
 template <typename SpiDriverT>
-void GateDriver<SpiDriverT>::SetupGateDrivers()
+void GateDriver<SpiDriverT>::SetupGateDrivers(
+    const Register* config,
+    uint16_t        configSize)
 {
     SendCommand(STGAP1AS_CMD_RESET_STATUS);
     DEVICE_DELAY_US(ResetStatusDelay);
@@ -291,9 +375,9 @@ void GateDriver<SpiDriverT>::SetupGateDrivers()
     SendCommand(STGAP1AS_CMD_START_CONFIG);
     DEVICE_DELAY_US(StartConfigDelay);
 
-    for (uint16_t i = 0; i < RegisterSetupSize; i++)
+    for (uint16_t i = 0; i < configSize; i++)
     {
-        WriteRegister(GateDriverRegisterSetup[i]);
+        WriteRegister(config[i]);
         DEVICE_DELAY_US(OtherCommandDelay);
     }
 
@@ -307,13 +391,15 @@ void GateDriver<SpiDriverT>::SetupGateDrivers()
 //! \return bool - true if the configuration has been verified
 //!
 template <typename SpiDriverT>
-bool GateDriver<SpiDriverT>::VerifyGateDriverConfig()
+bool GateDriver<SpiDriverT>::VerifyGateDriverConfig(
+    const Register* config,
+    uint16_t        configSize)
 {
     DataBuffer regValues;
     bool       result = true;
-    for (uint16_t i = 0; i < RegisterSetupSize; i++)
+    for (uint16_t i = 0; i < configSize; i++)
     {
-        const Register& reg = GateDriverRegisterSetup[i];
+        const Register& reg = config[i];
         ReadRegister(reg, regValues);
         DEVICE_DELAY_US(RemoteRegReadDelay);
 
