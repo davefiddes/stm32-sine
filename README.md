@@ -19,6 +19,11 @@ Over the original stm32-sine firmware this fork adds:
 
 Binary releases can be found on the [releases page](../../releases).
 
+## Hardware
+
+The replacement Tesla Model 3 Drive Unit PCB V3.2 required to run this firmware can be purchased from the
+[EV BMW](https://evbmw.com/index.php/evbmw-webshop/tesla-boards/tesla-model-3-du-32) web shop.
+
 ## Further reading
 
 Development is documented in this forum thread: <https://openinverter.org/forum/viewtopic.php?t=575>
