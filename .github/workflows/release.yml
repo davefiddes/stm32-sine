@@ -45,12 +45,13 @@ jobs:
           cp misc/oi-inverter-can-map*.json firmware_package/
           cp misc/oi-inverter.dbc firmware_package/
           cp misc/tesla-m3-*-params.json firmware_package/
+          zip -r stm32-sine-${{ github.event.inputs.tag }}-firmware.zip firmware_package/
 
       - name: Upload firmware package
         uses: actions/upload-artifact@v7
         with:
-          name: stm32-sine-${{ github.event.inputs.tag }}-firmware
-          path: firmware_package/
+          name: stm32-sine-firmware
+          path: stm32-sine-${{ github.event.inputs.tag }}-firmware.zip
 
   source:
     runs-on: ubuntu-latest
@@ -63,13 +64,13 @@ jobs:
 
       - name: Create source tarball
         run: |
-          ./scripts/git-archive-all.sh --format tar.gz --prefix stm32-sine-${{ github.event.inputs.tag }}/ stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
+          ./scripts/git-archive-all.sh --format tar.gz --prefix stm32-sine-${{ github.event.inputs.tag }}/ stm32-sine-${{ github.event.inputs.tag }}-source.tar.gz
 
       - name: Upload source tarball
         uses: actions/upload-artifact@v7
         with:
           name: source-tarball
-          path: stm32-sine-source-${{ github.event.inputs.tag }}.tar.gz
+          path: stm32-sine-${{ github.event.inputs.tag }}-source.tar.gz
 
   release:
     needs: [build, source]
@@ -90,5 +91,5 @@ jobs:
           draft: true
           prerelease: true
           files: |
-            artifacts/**/stm32-sine*.zip
-            artifacts/**/stm32-sine-source-*.tar.gz
+            artifacts/**/stm32-sine-${{ github.event.inputs.tag }}-firmware.zip
+            artifacts/**/stm32-sine-${{ github.event.inputs.tag }}-source.tar.gz
