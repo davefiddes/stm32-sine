@@ -45,7 +45,7 @@ jobs:
           cp misc/oi-inverter-can-map*.json firmware_package/
           cp misc/oi-inverter.dbc firmware_package/
           cp misc/tesla-m3-*-params.json firmware_package/
-          zip -r stm32-sine-${{ github.event.inputs.tag }}-firmware.zip firmware_package/
+          cd firmware_package && zip -r ../stm32-sine-${{ github.event.inputs.tag }}-firmware.zip . && cd ..
 
       - name: Upload firmware package
         uses: actions/upload-artifact@v7
