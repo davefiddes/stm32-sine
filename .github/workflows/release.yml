@@ -14,9 +14,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        control: [sine,foc]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -32,25 +29,28 @@ jobs:
       - name: Get submodules
         run: make get-deps
 
-      - name: Uppercase CONTROL
+      - name: Build SINE firmware
+        run: make CONTROL=SINE clean all
+
+      - name: Build FOC firmware
+        run: make CONTROL=FOC clean all
+
+      - name: Prepare firmware package
         run: |
-          echo "CONTROL=$(echo ${{ matrix.control }} | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
+          mkdir -p firmware_package
+          cp stm32_sine.bin firmware_package/stm32_sine-${{ github.event.inputs.tag }}.bin
+          cp stm32_sine.hex firmware_package/stm32_sine-${{ github.event.inputs.tag }}.hex
+          cp stm32_foc.bin firmware_package/stm32_foc-${{ github.event.inputs.tag }}.bin
+          cp stm32_foc.hex firmware_package/stm32_foc-${{ github.event.inputs.tag }}.hex
+          cp misc/oi-inverter-can-map*.json firmware_package/
+          cp misc/oi-inverter.dbc firmware_package/
+          cp misc/tesla-m3-*-params.json firmware_package/
 
-      - name: Build firmware (${{ matrix.control }})
-        run: make clean all
-
-      - name: Prepare artifacts
-        run: |
-          cp stm32_${{ matrix.control }}.bin stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.bin
-          cp stm32_${{ matrix.control }}.hex stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.hex
-
-      - name: Upload artifacts
+      - name: Upload firmware package
         uses: actions/upload-artifact@v7
         with:
-          name: stm32_${{ matrix.control }}-firmware
-          path: |
-            stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.bin
-            stm32_${{ matrix.control }}-${{ github.event.inputs.tag }}.hex
+          name: stm32-sine-${{ github.event.inputs.tag }}-firmware
+          path: firmware_package/
 
   source:
     runs-on: ubuntu-latest
@@ -90,6 +90,5 @@ jobs:
           draft: true
           prerelease: true
           files: |
-            artifacts/**/stm32_*.bin
-            artifacts/**/stm32_*.hex
+            artifacts/**/stm32-sine*.zip
             artifacts/**/stm32-sine-source-*.tar.gz
