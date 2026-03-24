@@ -220,13 +220,8 @@ const typename GateDriver<SpiDriverT>::Register
           STGAP1AS_REG_CFG3_MASK },
         { STGAP1AS_REG_CFG4,
           STGAP1AS_REG_CFG4_UVLO_LATCHED | STGAP1AS_REG_CFG4_VLON_TH_NEG_3V |
-              STGAP1AS_REG_CFG4_VHON_TH_10V,
-          LowSide,
-          STGAP1AS_REG_CFG4_MASK },
-        { STGAP1AS_REG_CFG4,
-          STGAP1AS_REG_CFG4_UVLO_LATCHED | STGAP1AS_REG_CFG4_VLON_TH_DISABLED |
-              STGAP1AS_REG_CFG4_VHON_TH_10V,
-          HighSide,
+              STGAP1AS_REG_CFG4_VHON_TH_12V,
+          All,
           STGAP1AS_REG_CFG4_MASK },
         { STGAP1AS_REG_CFG5,
           STGAP1AS_REG_CFG5_2LTO_EN | STGAP1AS_REG_CFG5_DESAT_EN,
@@ -244,8 +239,8 @@ const typename GateDriver<SpiDriverT>::Register
 
 template <typename SpiDriverT>
 const uint16_t GateDriver<SpiDriverT>::RegisterSetupSizeFDU =
-    sizeof(GateDriver<SpiDriverT>::GateDriverRegisterSetupRDU) /
-    sizeof(GateDriverRegisterSetupRDU[0]);
+    sizeof(GateDriver<SpiDriverT>::GateDriverRegisterSetupFDU) /
+    sizeof(GateDriverRegisterSetupFDU[0]);
 
 // Delays from STGAP1AS datasheet Table 6. DC operation electrical
 // characteristics - SPI Section
