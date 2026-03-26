@@ -37,8 +37,37 @@
 #define PRECHARGE_TIMEOUT 500 //5s
 #define CAN_TIMEOUT       50  //500ms
 #define ADC_CHAN_UDC      3
-#define MAP(x, in_min, in_max, out_min,out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
+//! \brief Simple linear mapping function that clamps the input at the minimum
+//! or maximum if required
+//!
+//! \param x Input value to map
+//! \param in_min Minimum of input range
+//! \param in_max Maximum of input range
+//! \param out_min Minimum of output range
+//! \param out_max Maximum of output range
+//!
+//! \return Mapped output value
+static float Map(
+   float x,
+   float in_min,
+   float in_max,
+   float out_min,
+   float out_max)
+{
+   if (x < in_min)
+   {
+      return out_min;
+   }
+   else if (x > in_max)
+   {
+      return out_max;
+   }
+   else
+   {
+      return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+   }
+}
 
 CanHardware* VehicleControl::can;
 FunctionPointerCallback VehicleControl::callback(VehicleControl::CanReceive, VehicleControl::CanClear);
@@ -542,16 +571,14 @@ float VehicleControl::ProcessUdc()
    {
       float udcnom = Param::GetFloat(Param::udcnom);
       float boost = Param::GetFloat(Param::boost);
-      float fweak;
 
-      if (Param::GetInt(Param::potnom) > 35)
-      {
-         fweak = MAP(Param::GetFloat(Param::potnom), 36, 100, (Param::GetFloat(Param::fweakstrt)), (Param::GetFloat(Param::fweak)));
-      }
-      else
-      {
-         fweak = Param::GetFloat(Param::fweakstrt);
-      }
+      // Below 36% throttle limit to fweakstrt otherwise scale linearly to fweak
+      float fweak = Map(
+         Param::GetFloat(Param::potnom),
+         36,
+         100,
+         Param::GetFloat(Param::fweakstrt),
+         Param::GetFloat(Param::fweak));
 
       if (udcnom > 0)
       {
