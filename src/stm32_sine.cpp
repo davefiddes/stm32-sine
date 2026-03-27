@@ -66,6 +66,7 @@ static std::optional<Stm32Can> can;
 static std::optional<CanMap> canMap;
 static std::optional<CanSdo> canSdo;
 static std::optional<Terminal> terminal;
+static std::optional<LinBus> lin;
 
 static bool seenBrakePedal = false;
 
@@ -468,10 +469,13 @@ int main(void)
 
    MotorVoltage::SetMaxAmp(SineCore::MAXAMP);
    PwmGeneration::SetCurrentOffset(2048, 2048);
-   LinBus lin;
+
    if (hwRev == HW_TESLAM3RDU || hwRev == HW_TESLAM3FDU)
    {
-      TeslaModel3::Initialize(&lin);
+      // Initialise the LIN UART
+      lin.emplace(UART4, 19200);
+
+      TeslaModel3::Initialize(&(*lin));
       ms100Handler = &TeslaModel3::Ms100Task;
       ms10Handler = &TeslaModel3::Ms10Task;
    }

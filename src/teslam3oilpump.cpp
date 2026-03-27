@@ -76,9 +76,6 @@ void TeslaM3OilPump::SetLinInterface(LinBus* l)
 {
    lin = l;
 
-   // Initialise the LIN UART
-   lin->Init(UART4, 19200);
-
    // Turn on the LIN transceiver
    DigIo::lin_wake.Clear();
    DigIo::lin_nslp.Set();
