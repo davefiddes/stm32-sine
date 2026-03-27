@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <stdint.h>
+#include <optional>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/rtc.h>
@@ -58,11 +59,14 @@
 
 HWREV hwRev; //Hardware variant of board we are running on
 
-static Stm32Scheduler* scheduler;
-static CanHardware* can;
-static CanMap* canMap;
-static CanSdo* canSdo;
-static Terminal* terminal;
+// Objects with complex initialisation are kept in std::optional to leave memory
+// aside to permit later construction
+static std::optional<Stm32Scheduler> scheduler;
+static std::optional<Stm32Can> can;
+static std::optional<CanMap> canMap;
+static std::optional<CanSdo> canSdo;
+static std::optional<Terminal> terminal;
+
 static bool seenBrakePedal = false;
 
 typedef void (*TaskHandler)();
@@ -472,28 +476,23 @@ int main(void)
       ms10Handler = &TeslaModel3::Ms10Task;
    }
 
-   Stm32Scheduler s(hwRev == HW_BLUEPILL ? TIM4 : TIM2); //We never exit main so it's ok to put it on stack
-   scheduler = &s;
-   Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
-   CanMap cm(&c);
-   CanSdo sdo(&c, &cm);
-   can = &c;
-   canMap = &cm;
-   canSdo = &sdo;
-   VehicleControl::SetCan(can);
-   TerminalCommands::SetCanMap(canMap);
-   SdoCommands::SetCanMap(canMap);
+   scheduler.emplace(hwRev == HW_BLUEPILL ? TIM4 : TIM2);
+   can.emplace(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
+   canMap.emplace(&(*can));
+   canSdo.emplace(&(*can), &(*canMap));
+   VehicleControl::SetCan(&(*can));
+   TerminalCommands::SetCanMap(&(*canMap));
+   SdoCommands::SetCanMap(&(*canMap));
 
-   s.AddTask(Ms100Task, 100);
-   s.AddTask(Ms10Task, 10);
+   scheduler->AddTask(Ms100Task, 100);
+   scheduler->AddTask(Ms10Task, 10);
 
    DigIo::prec_out.Set();
 
-   Terminal t(USART3, TermCmds);
-   terminal = &t;
+   terminal.emplace(USART3, TermCmds);
 
    if (hwRev == HW_REV1)
-      t.DisableTxDMA();
+      terminal->DisableTxDMA();
 
    UpgradeParameters();
    Param::Change(Param::PARAM_LAST);
@@ -504,12 +503,12 @@ int main(void)
    while(1)
    {
       char c = 0;
-      CanSdo::SdoFrame* sdoFrame = sdo.GetPendingUserspaceSdo();
-      t.Run();
+      CanSdo::SdoFrame* sdoFrame = canSdo->GetPendingUserspaceSdo();
+      terminal->Run();
 
       if (canSdo->GetPrintRequest() == PRINT_JSON)
       {
-         TerminalCommands::PrintParamsJson(canSdo, &c);
+         TerminalCommands::PrintParamsJson(&(*canSdo), &c);
       }
       if (0 != sdoFrame)
       {
@@ -522,7 +521,7 @@ int main(void)
             ProcessCustomSdoCommands(sdoFrame);
          }
 
-         sdo.SendSdoReply(sdoFrame);
+         canSdo->SendSdoReply(sdoFrame);
       }
    }
 

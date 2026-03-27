@@ -4,7 +4,7 @@ CPP	= g++
 LD		= g++
 CP		= cp
 CFLAGS    = -std=c99 -Wall -Wextra -Werror -fsanitize=undefined,address -ggdb -DSTM32F1 -I../include -I../libopeninv/include -I../libopencm3/include
-CXXFLAGS    = -std=c++14 -Wall -Wextra -Werror -fsanitize=undefined,address -ggdb -DSTM32F1 -DCTRL_FOC=1 -DCTRL_SINE=0 -DCTRL=CTRL_FOC -I../include -I../libopeninv/include -I../libopencm3/include
+CXXFLAGS    = -std=c++17 -Wall -Wextra -Werror -fsanitize=undefined,address -ggdb -DSTM32F1 -DCTRL_FOC=1 -DCTRL_SINE=0 -DCTRL=CTRL_FOC -I../include -I../libopeninv/include -I../libopencm3/include
 LDFLAGS     = -g -fsanitize=undefined,address
 BINARY		= test_sine
 OBJSL = test_main.o fu.o test_fu.o test_fp.o test_vcu.o my_fp.o my_string.o params.o vehiclecontrol.o GD31xxOI.o \
