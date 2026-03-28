@@ -186,6 +186,9 @@ void TeslaModel3::Ms100Task()
 {
     if (TeslaM3GateDriver::IsFaulty())
     {
+        // Log the fault and store the details for the user
+        // The inverter will have been shutdown automatically by the GATE_DIAG
+        // signal tripping PWM_INHIBIT
         ErrorMessage::Post(ERR_GATEDRIVEFAULT);
 
         Param::SetInt(
@@ -208,8 +211,6 @@ void TeslaModel3::Ms100Task()
         Param::SetInt(
             Param::m3_phaseC_lo,
             TeslaM3GateDriver::GetStatus(TeslaM3GateDriver::PhaseCLow));
-
-        // TODO: Shutdown the inverter?
     }
 
     // Monitor the ignition input
